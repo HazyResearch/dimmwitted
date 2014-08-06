@@ -11,12 +11,28 @@ void _pernode_run_map(void (*p_map) (long, const RDTYPE * const, WRTYPE * const)
     const long * const tasks,
     long start, long end, int numa_node){
 
-  //numa_run_on_node(numa_node);
-  //numa_set_localalloc();
+  numa_run_on_node(numa_node);
+  numa_set_localalloc();
 
   for(long i=start;i<end;i++){
     p_map(tasks[i], RDPTR, WRPTR);
   }
+}
+
+template<class RDTYPE, class WRTYPE>
+void _pernode_comm(void (*p_comm) (WRTYPE * const, WRTYPE ** const, int),
+  WRTYPE * const myself,
+  WRTYPE ** const allothers,
+  int nreplicas, 
+  int numa_node
+  ){
+
+  numa_run_on_node(numa_node);
+  numa_set_localalloc();
+  
+  // TODO
+  p_comm(myself, allothers, nreplicas);
+
 }
 
 template<class RDTYPE,
@@ -61,11 +77,12 @@ public:
 
   void exec(const long * const tasks, int ntasks,
     void (*p_map) (long, const RDTYPE * const, WRTYPE * const),
-         void (*p_comm) (WRTYPE * const, const WRTYPE ** const, int),
+         void (*p_comm) (WRTYPE * const, WRTYPE ** const, int),
          void (*p_finalize) (WRTYPE * const, WRTYPE ** const, int)
     ){
 
     std::vector<std::thread> threads;
+    std::vector<std::thread> comm_threads;
 
     int n_numa_nodes = numa_max_node();
     int n_thread_per_numa = getNumberOfCores()/(n_numa_nodes+1);
@@ -84,10 +101,17 @@ public:
         threads.push_back(std::thread(_pernode_run_map<RDTYPE, WRTYPE>, p_map, RDPTR, model_replicas[i_sharding], tasks, start, end, i_sharding));
         std::cout << "| Start worker " << i_thread << " on NUMA node " << i_sharding << std::endl;
       }
+      std::cout << "| Start communicator on NUMA node " << i_sharding << std::endl;
+      comm_threads.push_back(std::thread(_pernode_comm<RDTYPE, WRTYPE>, p_comm, model_replicas[i_sharding], model_replicas, n_sharding, i_sharding));
+    
     }
 
     for(int i=0;i<total;i++){
       threads[i].join();
+    }
+
+    for(int i=0;i<n_sharding;i++){
+      comm_threads[i].join();
     }
 
     p_finalize(WRPTR, model_replicas, n_sharding);

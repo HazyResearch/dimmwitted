@@ -29,7 +29,16 @@ void glm_map (long i_task, const GLMData * const rddata, GLMModel * const wrdata
   rddata->update(rddata->examples[i_task], wrdata->model, rddata->labels[i_task], rddata->nfeat);
 }
 
-void glm_comm (GLMModel * const a, const GLMModel ** const b, int nreplicas){
+void glm_comm (GLMModel * const a, GLMModel ** const b, int nreplicas){
+
+  double sum = 0.0;
+  for(int i=0;i<a->nfeat;i++){
+    sum = 0.0;
+    for(int j=0;j<nreplicas;j++){
+      sum += b[j]->model[i];
+    }
+    a->model[i] = sum/nreplicas;
+  }
 
 }
 
@@ -207,9 +216,12 @@ void glm_do(){
     std::cout << ti << " seconds!" << std::endl;
     std::cout << tp/1024/1024 << " MB/secs!" << std::endl;
 
-    //for(int i=0;i<nfeat;i++){
-    //  std::cout << model.model[i] << std::endl;
-    //}
+    double sum = 0.0;
+    for(int i=0;i<nfeat;i++){
+      sum += model.model[i];
+    }
+
+    std::cout << sum << std::endl;
 
   }
   

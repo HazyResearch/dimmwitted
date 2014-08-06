@@ -39,7 +39,7 @@ public:
 
   void exec(const long * const tasks, int ntasks,
     void (*p_map) (long, const RDTYPE * const, WRTYPE * const),
-         void (*p_comm) (WRTYPE * const, const WRTYPE ** const, int),
+         void (*p_comm) (WRTYPE * const, WRTYPE ** const, int),
          void (*p_finalize) (WRTYPE * const, WRTYPE ** const, int)
     ){
 

@@ -154,7 +154,7 @@ void cnn_map (long i_task, const NNData * const rddata, NNModel * const wrdata){
 
 }
 
-void cnn_comm (NNModel * const a, const NNModel ** const b, int nreplicas){
+void cnn_comm (NNModel * const a, NNModel ** const b, int nreplicas){
 
 }
 
