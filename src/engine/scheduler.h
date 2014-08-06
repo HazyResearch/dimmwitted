@@ -7,7 +7,8 @@
 enum ScheduleType{
   SCHED_STRAWMAN,
   SCHED_HOGWILD,
-  SCHED_PERCORE
+  SCHED_PERCORE,
+  SCHED_PERNODE
 };
 
 /*! \p transpose : transpose a matrix

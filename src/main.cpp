@@ -34,9 +34,9 @@ void p_data_allocator (double ** const a, const double * const b){
 int main(int argc, char** argv){
   std::cout << "Hello World!" << std::endl;
 
-  cnn_do();
+  //cnn_do();
 
-  //glm_do();
+  glm_do();
 
   /*
   double rddata[100000];

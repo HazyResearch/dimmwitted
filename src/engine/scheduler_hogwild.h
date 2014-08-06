@@ -45,7 +45,11 @@ public:
 
     std::vector<std::thread> threads;
 
-    long n_sharding = 4;
+    //int n_numa_nodes = numa_max_node();
+    //long n_sharding = getNumberOfCores()/(n_numa_nodes+1);
+ 
+    int n_sharding = 8;
+
     for(int i_sharding=0;i_sharding<n_sharding;i_sharding++){
       long start = ((long)(ntasks/n_sharding)+1) * i_sharding;
       long end = ((long)(ntasks/n_sharding)+1) * (i_sharding+1);
