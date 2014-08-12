@@ -1,18 +1,17 @@
-/**
-Copyright 2014 Hazy Research (http://i.stanford.edu/hazy)
+// Copyright 2014 Hazy Research (http://i.stanford.edu/hazy)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-**/
 
 #ifndef _SPARSE_DW_H
 #define _SPARSE_DW_H
@@ -92,6 +91,17 @@ void sparse_model_allocator (B ** const a, const B * const b){
   *a = new B(*b);
 }
 
+/**
+ * \brief This class is the interface of DimmWitted for Sparse data.
+ * Detailed documentation of functions that are similar
+ * as the Dense data can be found in DenseDimmWitted.
+ *
+ * \tparam A Type of elements for data.
+ * \tparam B Type of model.
+ * \tparam model_repl_type Model replication strategy.
+ * \tparam data_repl_type Data replication strategy.
+ * \tparam access_mode Access Method
+ */
 template<class A, class B, ModelReplType model_repl_type, DataReplType data_repl_type, AccessMode access_mode>
 class SparseDimmWitted{
 
@@ -154,6 +164,12 @@ class SparseDimmWitted{
 
 public:
 
+	/**
+	 * \brief Constructor of dense DimmWitted. The input data
+	 * (_data, rows, cols) is assumed to be stored in the
+	 * CSR format, _n_elems is the number of non-zero
+	 * elements.
+	 */
 	SparseDimmWitted(
 		A* _data, long * rows, long * cols, long _n_rows, long _n_cols, long _n_elems, 
 		B * const _model):

@@ -1,18 +1,17 @@
-/**
-Copyright 2014 Hazy Research (http://i.stanford.edu/hazy)
+// Copyright 2014 Hazy Research (http://i.stanford.edu/hazy)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-**/
 
 #ifndef _DENSE_DW_H
 #define _DENSE_DW_H
@@ -25,11 +24,17 @@ limitations under the License.
 #include "engine/scheduler_percore.h"
 #include "engine/scheduler_pernode.h"
 
+/**
+ * \brief Task description for the row-access method.
+ *
+ * \tparam A type of data elements (See DenseDimmWitted)
+ * \tparam B type of model (See DenseDimmWitted)
+ */
 template<class A, class B>
 class TASK_ROW{
 public:
-	DenseVector<A>* row_pointers; 
-	double (*f) (const DenseVector<A>* const, B* const);
+	DenseVector<A>* row_pointers; /**<A list of pointer to rows*/
+	double (*f) (const DenseVector<A>* const, B* const);	/**<Row-access function to execute*/
 	TASK_ROW(DenseVector<A>* const _row_pointers, 
 			double (* _f) (const DenseVector<A>* const p_row, B* const p_model)):
 		row_pointers(_row_pointers), f(_f)
@@ -37,11 +42,17 @@ public:
 	TASK_ROW(){}
 };
 
+/**
+ * \brief Task description for the column-access method.
+ *
+ * \tparam A type of data elements (See DenseDimmWitted)
+ * \tparam B type of model (See DenseDimmWitted)
+ */
 template<class A, class B>
 class TASK_COL{
 public:
-	DenseVector<A>* col_pointers; 
-	double (*f) (const DenseVector<A>* const, B* const);
+	DenseVector<A>* col_pointers; /**<A list of pointer to columns*/
+	double (*f) (const DenseVector<A>* const, B* const);	/**<Column-access function to execute*/
 	TASK_COL(DenseVector<A>* const _col_pointers,
 		double (*_f) (const DenseVector<A>* const, B* const)):
 		col_pointers(_col_pointers), f(_f)
@@ -49,14 +60,21 @@ public:
 	TASK_COL(){}
 };
 
+/**
+ * \brief Task description for the column-to-row-access method.
+ *
+ * \tparam A type of data elements (See DenseDimmWitted)
+ * \tparam B type of model (See DenseDimmWitted)
+ */
 template<class A, class B>
 class TASK_C2R{
 public:
-	DenseVector<A>*  col_pointers; 
-	Pair<long, long> *  c2r_col_2_rowbuffer_idxs;
-	DenseVector<A>*  c2r_row_pointers_buffer;
+	DenseVector<A>*  col_pointers; /**<A list of pointer to columns*/
+	Pair<long, long> *  c2r_col_2_rowbuffer_idxs; /**<See DenseDimmWitted::c2r_col_2_rowbuffer_idxs*/
+	DenseVector<A>*  c2r_row_pointers_buffer; /**<See DenseDimmWitted::_c2r_row_pointers_buffer*/
 	double (*f) (const DenseVector<A>* const p_col, int i_col,
 																		 const DenseVector<A>* const p_rows, int, B* const);
+																	/**<Column-to-row-access function to execute*/
 
 	TASK_C2R(DenseVector<A>* _col_pointers, Pair<long, long> * _c2r_col_2_rowbuffer_idxs,
 		DenseVector<A>* _c2r_row_pointers_buffer, 
@@ -70,16 +88,34 @@ public:
 
 };
 
+/**
+ * \brief A thin wrapper for the row-access function that can be used by DWRun (engine/scheduler.h).
+ *
+ * \tparam A type of data elements (See DenseDimmWitted)
+ * \tparam B type of model (See DenseDimmWitted)
+ */
 template<class A, class B>
 double dense_map_row (long i_task, const TASK_ROW<A,B> * const rddata, B * const wrdata){
 	return rddata->f(&rddata->row_pointers[i_task], wrdata);
 }
 
+/**
+ * \brief A thin wrapper for the column-access function that can be used by DWRun (engine/scheduler.h).
+ *
+ * \tparam A type of data elements (See DenseDimmWitted)
+ * \tparam B type of model (See DenseDimmWitted)
+ */
 template<class A, class B>
 double dense_map_col (long i_task, const TASK_COL<A,B> * const rddata, B * const wrdata){
 	return rddata->f(&rddata->col_pointers[i_task], wrdata);
 }
 
+/**
+ * \brief A thin wrapper for the column-to-row-access function that can be used by DWRun (engine/scheduler.h).
+ *
+ * \tparam A type of data elements (See DenseDimmWitted)
+ * \tparam B type of model (See DenseDimmWitted)
+ */
 template<class A, class B>
 double dense_map_c2r (long i_task, const TASK_C2R<A,B> * const rddata, B * const wrdata){
 	const Pair<long, long> & row_ptrs = rddata->c2r_col_2_rowbuffer_idxs[i_task];
@@ -87,76 +123,140 @@ double dense_map_c2r (long i_task, const TASK_C2R<A,B> * const rddata, B * const
 						row_ptrs.second, wrdata);
 }
 
+/**
+ * \brief A thin wrapper for allocating model replicas that can be used by DWRun (engine/scheduler.h).
+ *
+ * \tparam A type of data elements (See DenseDimmWitted)
+ * \tparam B type of model (See DenseDimmWitted)
+ */
 template<class A, class B>
 void dense_model_allocator (B ** const a, const B * const b){
   *a = new B(*b);
 }
 
 /**
- * This class is the interface of 
+ * \brief This class is the interface of DimmWitted for Dense data.
+ * For sparse data, you can use engine/dimmwitted_sparse.h
+ *
+ * \tparam A Type of elements for data.
+ * \tparam B Type of model.
+ * \tparam model_repl_type Model replication strategy.
+ * \tparam data_repl_type Data replication strategy.
+ * \tparam access_mode Access Method
  */
 template<class A, class B, ModelReplType model_repl_type, DataReplType data_repl_type, AccessMode access_mode>
 class DenseDimmWitted{
 
 	typedef double (*DW_FUNCTION_ROW) (const DenseVector<A>* const, B* const);
+		/**<\brief Type of row-access function*/
 
 	typedef double (*DW_FUNCTION_COL) (const DenseVector<A>* const, B* const);
+		/**<\brief Type of column-access function*/
 
 	typedef double (*DW_FUNCTION_C2R) (const DenseVector<A>* const p_col, int i_col,
 																		 const DenseVector<A>* const p_rows, int, B* const);
+		/**<\brief Type of column-to-row-access function*/
 
 	typedef void (*DW_FUNCTION_MAVG) (B** const p_models, int nreplicas, int ireplica);
+		/**<\brief Type of the function that conducts model averaging*/
 
-	A** const p_data;
+	A** const p_data; /**<\brief Pointer to the data, which is a two dimensional array of type A*/
 
-	long n_rows;
+	long n_rows; /**<\brief Number of rows of the data.*/
 
-	long n_cols;
+	long n_cols; /**<\brief Number of columns of the data.*/
 	
-	B* const p_model;
+	B* const p_model; /**<\brief Pointer to the model.*/
 
-	std::map<unsigned int, DW_FUNCTION_ROW*> fs_row;
+	std::map<unsigned int, DW_FUNCTION_ROW*> fs_row; /**<\brief Map from function handle to row-access functions.*/
 
-	std::map<unsigned int, DW_FUNCTION_COL*> fs_col;
+	std::map<unsigned int, DW_FUNCTION_COL*> fs_col; /**<\brief Map from function handle to col-access functions.*/
 
-	std::map<unsigned int, DW_FUNCTION_C2R*> fs_c2r;
+	std::map<unsigned int, DW_FUNCTION_C2R*> fs_c2r; /**<\brief Map from function handle to column-to-row-access functions.*/
 
-	std::map<unsigned int, DW_FUNCTION_MAVG*> fs_avg;
+	std::map<unsigned int, DW_FUNCTION_MAVG*> fs_avg; /**<\brief Map from function handle to model averaging functions.
+																											 Note that, a model averaging function does not have
+																											 its own handle, the function handle in this map is
+																											 the handle for row-access/col-access/column-to-row-access
+																											 functions. DimmWitted will use the corresponding averaging
+																											 function when these function handles are used.*/
+	
+	unsigned int current_handle_id;	/**<\brief Function handle for the next function-registering.*/
 
-	unsigned int current_handle_id;
+	DenseVector<A>* const row_pointers; /**<\brief Pointer to each row of the data.*/
 
-	DenseVector<A>* const row_pointers; 
+	DenseVector<A>* const col_pointers; /**<\brief Pointer to each column of the data.*/
 
-	DenseVector<A>* const col_pointers;
+	DenseVector<A>* _c2r_row_pointers_buffer; /**<\brief For column-to-row-access, this data structure
+																							stores the following information. For a matrix
+																							\verbatim
+																							       Col1 Col2 Col3
+																							  Row1 0    A12  A13
+																							  Row2 A21  0    A23
+																							\endverbatim
+																							This contains a list of row pointers
+																							\verbatim
+																								Row2 Row1 Row1 Row2
+																							\endverbatim
+																							Where the first Row2 is for Col1, and Row1 is not
+																							here because A11=0. The second Row1 is for
+																							Col2, and the last Row1 Row2 is for Col3.
+																						*/
 
-	Pair<long, long> * const c2r_col_2_rowbuffer_idxs;
+	Pair<long, long> * const c2r_col_2_rowbuffer_idxs; /**<\brief For For column-to-row-access, this data structure
+																							stores the following information. Still use the
+																							example of DenseDimmWitted::_c2r_row_pointers_buffer, for this example
+																							matrix, this data structure contains
+																							\verbatim
+																								(0,1), (1,1), (2,2)
+																							\endverbatim
+																							Where
+																							\verbatim
+																							  (0,1) corresponds to Row2
+																							  (1,1) corresponds to Row1
+																							  (2,2) corresponds to Row1, Row2
+																							\endverbatim
+																							More generally, (a,b) defines a sequence
+																							in DenseDimmWitted::_c2r_row_pointers_buffer, starting from
+																							the position a, and contain b elements.
+																							*/
 
-	DenseVector<A>* _c2r_row_pointers_buffer;
+	A* _new_ele_buffer; /**<\brief If the input is row-wise storage, and the user requires column-wise
+												 access, this pointer points to the re-structured region of
+												 the memory for column-wise storage*/
 
-	A* _new_ele_buffer;
+	long * row_ids; /**<\brief A list of indexes that the system will access. For row-access, it will be
+									 [0,nrows]. */
 
-	long * tasks;
+	long * col_ids; /**<\brief A list of indexes that the system will access. For column-access or 
+									 column-to-row access, it will be [0,ncols]. */
 
-	long * row_ids;
+	TASK_ROW<A, B> task_row; /**<\brief Task description for row-access. */
 
-	long * col_ids;
+	TASK_COL<A, B> task_col; /**<\brief Task description for column-access. */
 
-	TASK_ROW<A, B> task_row;
-
-	TASK_COL<A, B> task_col;
-
-	TASK_C2R<A, B> task_c2r;
+	TASK_C2R<A, B> task_c2r; /**<\brief Task description for column-to-row access. */
 
 	DWRun<TASK_ROW<A,B>, B, model_repl_type, data_repl_type> dw_row_runner;
+		/**<\brief Execution backend for row-access. See engine/scheduler.h. */
 
 	DWRun<TASK_COL<A,B>, B, model_repl_type, data_repl_type> dw_col_runner;
+		/**<\brief Execution backend for column-access. See engine/scheduler.h. */
 
 	DWRun<TASK_C2R<A,B>, B, model_repl_type, data_repl_type> dw_c2r_runner;
+		/**<\brief Execution backend for column-to-row-access. See engine/scheduler.h. */
 
 public:
 
-	DenseDimmWitted(A** _data, long _n_rows, long _n_cols,
-	   B * const _model
+	/**
+	 * \brief Constructor of dense DimmWitted.
+	 *
+	 * \param _data The data as a row-wise stored two dimensional array of type A.
+	 * \param _n_rows Number of rows in the data.
+	 * \param _n_cols Number of columns in the data.
+	 * \param _model Pointer to the model.
+	 */
+	DenseDimmWitted(A** _data, long _n_rows, long _n_cols, B * const _model
 	):
 		p_data(_data), p_model(_model),
 		n_rows(_n_rows), n_cols(_n_cols),
@@ -231,11 +331,11 @@ public:
 		}
 	}
 
-	void register_model_avg(unsigned int f_handle, 
-		void (* f) (B** const p_models, int nreplicas, int ireplica)){
-		fs_avg[f_handle] = &f;
-	}
-
+	/**
+	 * \brief Register a row-access function.
+	 *
+	 * \return function handle that can used later to call this function.
+	 */
 	unsigned int register_row(
 		double (* f) (const DenseVector<A>* const p_row, B* const p_model)
 	){	
@@ -243,6 +343,11 @@ public:
 		return current_handle_id ++;
 	}
 
+	/**
+	 * \brief Register a column-access function.
+	 *
+	 * \return function handle that can used later to call this function.
+	 */
 	unsigned int register_col(
 		double (* f) (const DenseVector<A>* const p_col, int n_row, B* const p_model)
 	){
@@ -250,6 +355,11 @@ public:
 		return current_handle_id ++;
 	}
 
+	/**
+	 * \brief Register a column-to-row-access function.
+	 *
+	 * \return function handle that can used later to call this function.
+	 */
 	unsigned int register_c2r(
 		double (* f) (const DenseVector<A>* const p_col, int i_col,
 					const DenseVector<A>* const p_rows, int n_rows,
@@ -259,6 +369,26 @@ public:
 		return current_handle_id ++;
 	}
 
+	/**
+	 * \brief Register a model averaging function.
+	 *
+	 * \param f_handle The function handle of a
+	 * row-access/column-access/column-to-row-access function that
+	 * this model averaging function will be used with.
+	 */
+	void register_model_avg(unsigned int f_handle, 
+		void (* f) (B** const p_models, int nreplicas, int ireplica)){
+		fs_avg[f_handle] = &f;
+	}
+
+	/**
+	 * \brief Execute the function with a given handle.
+	 *
+	 * \return The function for each handle returns a double value
+	 * after processing each row/column, this exec function will
+	 * return a sum of these. This can be used, say, to calculate 
+	 * the loss.  
+	 */
 	double exec(unsigned int f_handle){
 
 		Timer t;
@@ -302,6 +432,8 @@ public:
 			}
 		}
 
+		// Report runtime and throughput statistics.
+		//
 		double data_byte = 1.0 * sizeof(A) * n_rows * n_cols;
 		double te = t.elapsed();
 		double throughput_gb = data_byte / te / 1024 / 1024 / 1024;

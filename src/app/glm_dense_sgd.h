@@ -1,18 +1,17 @@
-/**
-Copyright 2014 Hazy Research (http://i.stanford.edu/hazy)
+// Copyright 2014 Hazy Research (http://i.stanford.edu/hazy)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-**/
 
 #ifndef _GLM_DENSE_SGD_H
 #define _GLM_DENSE_SGD_H
@@ -21,7 +20,7 @@ limitations under the License.
 #include "engine/dimmwitted_dense.h"
 
 /**
- * A model object. This model contains
+ * \brief A model object. This model contains
  * two elements: (1) p: the pointers
  * to the paramters, and (2) n: the number
  * of paramters that this model contains.
@@ -49,14 +48,14 @@ public:
 };
 
 /**
- * The function that takes input a series of models,
+ * \brief The function that takes input a series of models,
  * and update one of them according to others. You
  * need to register this one if you want to use
  * PerNode and PerCore strategy.
  */
-void f_lr_modelavg(GLMModelExample** const p_models, /*< set of models*/
-                   int nreplicas, /*< number of models in the above set */
-                   int ireplica /*< id of the model that needs updates*/
+void f_lr_modelavg(GLMModelExample** const p_models, /**< set of models*/
+                   int nreplicas, /**< number of models in the above set */
+                   int ireplica /**< id of the model that needs updates*/
                    ){
   GLMModelExample * p_model = p_models[ireplica];
   double sum = 0.0;
@@ -71,7 +70,7 @@ void f_lr_modelavg(GLMModelExample** const p_models, /*< set of models*/
 }
 
 /**
- * One example of the function that can be register to
+ * \brief One example of the function that can be register to
  * Row-wise access (DW_ROW). This function takes as input
  * one row of the data (ex), and the current model,
  * returns the loss.
@@ -87,7 +86,7 @@ double f_lr_loss(const DenseVector<double>* const ex, GLMModelExample* const p_m
 }
 
 /**
- * One example of the function that can be register to
+ * \brief One example of the function that can be register to
  * Row-wise access (DW_ROW). This function takes as input
  * one row of the data (ex), and the current model (p_model),
  * and update the model with the gradient.
@@ -114,7 +113,7 @@ double f_lr_grad(const DenseVector<double>* const ex, GLMModelExample* const p_m
 }
 
 /**
- * One example main entry of how to use DimmWitted.
+ * \brief One example main entry of how to use DimmWitted.
  * The application is Stochastic Gradient Descent (SGD)
  * with Row-wise Access.
  * 

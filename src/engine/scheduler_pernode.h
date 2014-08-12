@@ -1,18 +1,17 @@
-/**
-Copyright 2014 Hazy Research (http://i.stanford.edu/hazy)
+// Copyright 2014 Hazy Research (http://i.stanford.edu/hazy)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-**/
 
 
 #ifndef _SCHEDULER_PERNODE_H
@@ -47,14 +46,17 @@ void _pernode_comm(void (*p_comm) (WRTYPE ** const, int, int),
 
   numa_run_on_node(numa_node);
   numa_set_localalloc();
-  
-  // TODO
-  //p_comm(myself, allothers, nreplicas);
 
   p_comm(allothers, nreplicas, numa_node);
 
 }
 
+/**
+ * \brief A specialization of DWRun that maintains a single
+ * model replica per socket and one thread per core. Each
+ * core updates the model replica on the same socket, and model replicas
+ * are averaged as soon as possible.
+ */
 template<class RDTYPE,
          class WRTYPE,
          DataReplType DATAREPL>
@@ -124,7 +126,6 @@ public:
         long start = ((long)(ntasks/total)+1) * ct;
         long end = ((long)(ntasks/total)+1) * (ct+1);
         end = end >= ntasks ? ntasks : end;
-        //threads.push_back(std::thread(_pernode_run_map<RDTYPE, WRTYPE>, p_map, RDPTR, model_replicas[i_sharding], tasks, start, end, i_sharding));
         
         if(DATAREPL == DW_FULL){
           futures.push_back(std::async(_pernode_run_map<RDTYPE, WRTYPE>, p_map, RDPTR, model_replicas[i_sharding], tasks, 0, ntasks, i_sharding));

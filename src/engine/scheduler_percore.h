@@ -1,18 +1,17 @@
-/**
-Copyright 2014 Hazy Research (http://i.stanford.edu/hazy)
+// Copyright 2014 Hazy Research (http://i.stanford.edu/hazy)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-**/
 
 
 #ifndef _SCHEDULER_PERCORE_H
@@ -33,6 +32,12 @@ double _percore_run_map(double (*p_map) (long, const RDTYPE * const, WRTYPE * co
   return rs;
 }
 
+/**
+ * \brief A specialization of DWRun that maintains a single
+ * model replica per core and one thread per core. Each
+ * core updates its own model replica, and model replicas
+ * are averaged at the end of the epoch.
+ */
 template<class RDTYPE,
          class WRTYPE,
          DataReplType DATAREPL>
@@ -57,14 +62,12 @@ public:
 
 
   void prepare(){
-    //int n_numa_nodes = numa_max_node();
     long n_sharding = getNumberOfCores();
     model_replicas = new WRTYPE*[n_sharding+1];
     for(int i=0;i<n_sharding;i++){
       p_model_allocator(&model_replicas[i], WRPTR);
     }
     model_replicas[n_sharding] = WRPTR;
-    //std::cout << "~~~~~~" << std::endl;
   }
 
   double exec(const long * const tasks, int ntasks,
@@ -83,7 +86,6 @@ public:
       long start = ((long)(ntasks/n_sharding)+1) * i_sharding;
       long end = ((long)(ntasks/n_sharding)+1) * (i_sharding+1);
       end = end >= ntasks ? ntasks : end;
-      //threads.push_back(std::thread(_percore_run_map<RDTYPE, WRTYPE>, p_map, RDPTR, model_replicas[i_sharding], tasks, start, end));
       if(DATAREPL == DW_FULL){
         futures.push_back(std::async(_percore_run_map<RDTYPE, WRTYPE>, p_map, RDPTR, model_replicas[i_sharding], tasks, 0, ntasks));
       }else{
@@ -95,7 +97,6 @@ public:
       rs += futures[i].get();
     }
 
-    //p_finalize(WRPTR, model_replicas, n_sharding);
     p_comm(model_replicas, n_sharding, n_sharding);
 
     return rs;

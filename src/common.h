@@ -1,18 +1,17 @@
-/**
-Copyright 2014 Hazy Research (http://i.stanford.edu/hazy)
+// Copyright 2014 Hazy Research (http://i.stanford.edu/hazy)
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-**/
 
 #ifndef _COMMON_H
 #define _COMMON_H
@@ -27,6 +26,9 @@ limitations under the License.
 #include <iomanip>  
 #include <future>
 
+/**
+ * \brief Class for dense vector of type A.
+ */
 template<class A>
 class DenseVector{
 public:
@@ -36,7 +38,20 @@ public:
         p(_p), n(_n){}
 };
 
-
+/**
+ * \brief Class for sparse vector of type A.
+ *
+ * For example, if we want to store a vector
+ * \verbatim
+   pos1=a pos2=b pos3=c
+   \endverbatim
+ * Then 
+ * \verbatim
+    p    = [a b c]
+    idxs = [pos1 pos2 pos3]
+    n    = 3
+   \endverbatim
+ */
 template<class A>
 class SparseVector{
 public:
@@ -53,7 +68,6 @@ public:
     A first;
     B second;
 };
-
 
 enum SparsityType{
   DW_SPARSE,
@@ -99,17 +113,14 @@ int getNumberOfCores() {
   #endif
 }
 
-
 #include <time.h>
 #include <sys/time.h>
 
 #ifdef __MACH__
 #include <mach/clock.h>
 #include <mach/mach.h>
-#endif
-
-#ifdef __MACH__
 #include <sys/time.h>
+
 //clock_gettime is not implemented on OSX
 int clock_gettime(int /*clk_id*/, struct timespec* t) {
     struct timeval now;
@@ -123,10 +134,8 @@ int clock_gettime(int /*clk_id*/, struct timespec* t) {
 #define CLOCK_MONOTONIC 0
 #endif
 
-
 #include <time.h>
 
-        
 class Timer {
 public:
     
@@ -151,7 +160,6 @@ public:
     
 };
          
-
 
 #ifndef __MACH__
     #include <numa.h>
