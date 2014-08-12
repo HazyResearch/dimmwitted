@@ -1,11 +1,29 @@
+/**
+Copyright 2014 Hazy Research (http://i.stanford.edu/hazy)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+**/
+
+
 #ifndef _SCHEDULER_STRAWMAN_H
 #define _SCHEDULER_STRAWMAN_H
 
 #include "engine/scheduler.h"
 
 template<class RDTYPE,
-         class WRTYPE>
-class DWRun<RDTYPE, WRTYPE, SCHED_STRAWMAN> {  
+         class WRTYPE,
+         DataReplType DATAREPL>
+class DWRun<RDTYPE, WRTYPE, DW_STRAWMAN, DATAREPL> {  
 public:
   
   const RDTYPE * const RDPTR;
@@ -25,15 +43,16 @@ public:
 
   }
 
-  void exec(const long * const tasks, int ntasks,
-             void (*p_map) (long, const RDTYPE * const, WRTYPE * const),
-         void (*p_comm) (WRTYPE * const, WRTYPE ** const, int),
+  double exec(const long * const tasks, int ntasks,
+             double (*p_map) (long, const RDTYPE * const, WRTYPE * const),
+         void (*p_comm) (WRTYPE ** const, int, int),
          void (*p_finalize) (WRTYPE * const, WRTYPE ** const, int)
     ){
-    std::cout << ntasks << std::endl;
+    double rs = 0.0;
     for(long i=0;i<ntasks;i++){
-      p_map(tasks[i], RDPTR, WRPTR);
+      rs += p_map(tasks[i], RDPTR, WRPTR);
     }
+    return rs;
   }
 
 };

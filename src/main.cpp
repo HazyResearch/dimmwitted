@@ -1,65 +1,32 @@
+/**
+Copyright 2014 Hazy Research (http://i.stanford.edu/hazy)
 
-#include "common.h"
-#include "engine/scheduler.h"
-#include "engine/scheduler_strawman.h"
-#include "engine/scheduler_hogwild.h"
-#include "engine/scheduler_percore.h"
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-#include "app/glm.h"
-#include "app/cnn.h"
+    http://www.apache.org/licenses/LICENSE-2.0
 
-void p_map (long i_task, const double * const rddata, double * const wrdata){
-  wrdata[0] += rddata[i_task];
-}
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+**/
 
-void p_comm (double * const a, const double ** const b, int nreplicas){
+#include "app/glm_dense_sgd.h"
+#include "app/glm_sparse_sgd.h"
+#include "app/glm_dense_scd.h"
 
-}
-
-void p_finalize (double * const a, double ** const b, int nreplicas){
-  for(int i=0;i<nreplicas;i++){
-    a[0] += b[i][0];
-  }
-}
-
-void p_model_allocator (double ** const a, const double * const b){
-  *a = (double *) malloc(sizeof(double));
-  **a = *b;
-}
-
-void p_data_allocator (double ** const a, const double * const b){
-
-}
-
+/**
+ * This is one example of running SGD for logistic regression
+ * in DimmWitted. You can find more examples in test/glm_dense.cc
+ * and test/glm_sparse.cc, and the documented code in 
+ * app/glm_dense_sgd.h
+ */
 int main(int argc, char** argv){
-  std::cout << "Hello World!" << std::endl;
-
-  //cnn_do();
-
-  glm_do();
-
-  /*
-  double rddata[100000];
-  for(int i=0;i<100000;i++){
-    rddata[i] = i;
-  }
-  double wrdata[1] = {0.0f};
-  long tasks[100000];
-  for(int i=0;i<100000;i++){
-    tasks[i] = i;
-  }  
-
-  std::cout << "START!" << std::endl;
-
-  //DWRun<double, double, p_map, p_comm, p_finalize, SCHED_STRAWMAN> dw(rddata, wrdata, tasks, 100000);
-  //DWRun<double, double, p_map, p_comm, p_finalize, SCHED_HOGWILD> dw(rddata, wrdata, tasks, 100000, p_model_allocator);
-  DWRun<double, double, p_map, p_comm, p_finalize, SCHED_PERCORE> dw(rddata, wrdata, tasks, 100000, p_model_allocator);
-
-  dw.prepare();
-  dw.exec();
-
-  std::cout << "SUM = " << wrdata[0] << std::endl;
-  */
-
+  double rs = test_glm_dense_sgd<DW_HOGWILD, DW_SHARDING>();
+  std::cout << "SUM OF MODEL (Should be ~1.3-1.4): " << rs << std::endl;
   return 0;
 }
+

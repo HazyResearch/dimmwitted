@@ -5,3 +5,19 @@ all:
 julia:
 	clang++ -O3 -std=c++11 -stdlib=libc++ -I./src -dynamiclib src/julia.cpp -o libdw_julia.dylib
 	nm -gm libdw_julia.dylib
+
+test_dep:
+
+	clang++ -O3 -I./lib/gtest-1.7.0/include/ -I./lib/gtest-1.7.0/  -c ./lib/gtest-1.7.0/src/gtest_main.cc
+
+	clang++ -O3 -I./lib/gtest-1.7.0/include/ -I./lib/gtest-1.7.0/  -c ./lib/gtest-1.7.0/src/gtest-all.cc
+	
+test:
+
+	clang++ -O3 -std=c++11 -stdlib=libc++ -I./test -I./src -I./lib/gtest-1.7.0/include/ -I./lib/gtest-1.7.0/  -c test/glm_sparse.cc
+
+	clang++ -O3 -std=c++11 -stdlib=libc++ -I./test -I./src -I./lib/gtest-1.7.0/include/ -I./lib/gtest-1.7.0/  -c test/glm_dense.cc
+
+	clang++ gtest_main.o  glm_sparse.o gtest-all.o -o run_test_sparse
+
+	clang++ gtest_main.o  glm_dense.o gtest-all.o -o run_test_dense
