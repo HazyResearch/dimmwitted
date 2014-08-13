@@ -1,19 +1,24 @@
 
-all:
-	clang++ -O3 -std=c++11 -stdlib=libc++ -I./src src/main.cpp
+ifndef CXX
+CXX=clang++
+endif
 
-julia:
-	clang++ -O3 -std=c++11 -stdlib=libc++ -I./src -dynamiclib src/julia.cpp -o libdw_julia.dylib
-	nm -gm libdw_julia.dylib
+CPP_FLAG = -O3 -std=c++11 -stdlib=libc++ 
+CPP_INCLUDE = -I./src
+
+exp:
+	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) src/main.cpp -o example
 
 test_dep:
 
-	clang++ -O3 -I./lib/gtest-1.7.0/include/ -I./lib/gtest-1.7.0/  -c ./lib/gtest-1.7.0/src/gtest_main.cc
+	$(CXX) -O3 -I./lib/gtest-1.7.0/include/ -I./lib/gtest-1.7.0/ -c ./lib/gtest-1.7.0/src/gtest_main.cc
 
-	clang++ -O3 -I./lib/gtest-1.7.0/include/ -I./lib/gtest-1.7.0/  -c ./lib/gtest-1.7.0/src/gtest-all.cc
+	$(CXX) -O3 -I./lib/gtest-1.7.0/include/ -I./lib/gtest-1.7.0/ -c ./lib/gtest-1.7.0/src/gtest-all.cc
 	
-test:
+runtest:
 
-	clang++ -O3 -std=c++11 -stdlib=libc++ -I./test -I./src -I./lib/gtest-1.7.0/include/ -I./lib/gtest-1.7.0/  -c test/glm.cc
+	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) -I./test -I./lib/gtest-1.7.0/include/ -I./lib/gtest-1.7.0/ -c test/glm.cc
 
-	clang++ gtest_main.o  glm.o gtest-all.o -o run_test
+	$(CXX) $(CPP_FLAG) gtest_main.o  glm.o gtest-all.o -o run_test
+
+	./run_test

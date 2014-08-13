@@ -146,6 +146,7 @@ void dense_model_allocator (B ** const a, const B * const b){
  */
 template<class A, class B, ModelReplType model_repl_type, DataReplType data_repl_type, AccessMode access_mode>
 class DenseDimmWitted{
+public:
 
 	typedef double (*DW_FUNCTION_ROW) (const DenseVector<A>* const, B* const);
 		/**<\brief Type of row-access function*/
@@ -168,13 +169,13 @@ class DenseDimmWitted{
 	
 	B* const p_model; /**<\brief Pointer to the model.*/
 
-	std::map<unsigned int, DW_FUNCTION_ROW*> fs_row; /**<\brief Map from function handle to row-access functions.*/
+	std::map<unsigned int, DW_FUNCTION_ROW> fs_row; /**<\brief Map from function handle to row-access functions.*/
 
-	std::map<unsigned int, DW_FUNCTION_COL*> fs_col; /**<\brief Map from function handle to col-access functions.*/
+	std::map<unsigned int, DW_FUNCTION_COL> fs_col; /**<\brief Map from function handle to col-access functions.*/
 
-	std::map<unsigned int, DW_FUNCTION_C2R*> fs_c2r; /**<\brief Map from function handle to column-to-row-access functions.*/
+	std::map<unsigned int, DW_FUNCTION_C2R> fs_c2r; /**<\brief Map from function handle to column-to-row-access functions.*/
 
-	std::map<unsigned int, DW_FUNCTION_MAVG*> fs_avg; /**<\brief Map from function handle to model averaging functions.
+	std::map<unsigned int, DW_FUNCTION_MAVG> fs_avg; /**<\brief Map from function handle to model averaging functions.
 																											 Note that, a model averaging function does not have
 																											 its own handle, the function handle in this map is
 																											 the handle for row-access/col-access/column-to-row-access
@@ -339,7 +340,7 @@ public:
 	unsigned int register_row(
 		double (* f) (const DenseVector<A>* const p_row, B* const p_model)
 	){	
-		fs_row[current_handle_id] = &f;
+		fs_row[current_handle_id] = f;
 		return current_handle_id ++;
 	}
 
@@ -351,7 +352,7 @@ public:
 	unsigned int register_col(
 		double (* f) (const DenseVector<A>* const p_col, int n_row, B* const p_model)
 	){
-		fs_col[current_handle_id] = &f;
+		fs_col[current_handle_id] = f;
 		return current_handle_id ++;
 	}
 
@@ -365,7 +366,7 @@ public:
 					const DenseVector<A>* const p_rows, int n_rows,
 					B* const p_model)
 	){
-		fs_c2r[current_handle_id] = &f;
+		fs_c2r[current_handle_id] = f;
 		return current_handle_id ++;
 	}
 
@@ -378,7 +379,7 @@ public:
 	 */
 	void register_model_avg(unsigned int f_handle, 
 		void (* f) (B** const p_models, int nreplicas, int ireplica)){
-		fs_avg[f_handle] = &f;
+		fs_avg[f_handle] = f;
 	}
 
 	/**
@@ -391,57 +392,46 @@ public:
 	 */
 	double exec(unsigned int f_handle){
 
-		Timer t;
 		double rs = 0.0;
 
 		if(access_mode == DW_ROW){
-			const DW_FUNCTION_ROW * const f = fs_row.find(f_handle)->second;
+			const DW_FUNCTION_ROW f = fs_row.find(f_handle)->second;
 			DW_FUNCTION_MAVG f_avg = NULL;
 			if(fs_avg.find(f_handle) != fs_avg.end()){
-				f_avg = *fs_avg.find(f_handle)->second;	
+				f_avg = fs_avg.find(f_handle)->second;	
 			}
-			task_row.f = *f;
+			task_row.f = f;
 			dw_row_runner.prepare();
 			rs = dw_row_runner.exec(row_ids, n_rows, dense_map_row<A,B>, f_avg, NULL);
 		}else if(access_mode == DW_COL){
-			const DW_FUNCTION_COL * const f = fs_col.find(f_handle)->second;
+			const DW_FUNCTION_COL f = fs_col.find(f_handle)->second;
 			DW_FUNCTION_MAVG  f_avg = NULL;
 			if(fs_avg.find(f_handle) != fs_avg.end()){
-				f_avg = *fs_avg.find(f_handle)->second;	
+				f_avg = fs_avg.find(f_handle)->second;	
 			}
-			task_col.f = *f;
+			task_col.f = f;
 			dw_col_runner.prepare();
 			rs = dw_col_runner.exec(col_ids, n_cols, dense_map_col<A,B>, f_avg, NULL);
 		}else if(access_mode == DW_C2R){
 			if(fs_row.find(f_handle) != fs_row.end()){
-				const DW_FUNCTION_ROW * const f = fs_row.find(f_handle)->second;
+				const DW_FUNCTION_ROW  f = fs_row.find(f_handle)->second;
 				DW_FUNCTION_MAVG  f_avg = NULL;
 				if(fs_avg.find(f_handle) != fs_avg.end()){
-					f_avg = *fs_avg.find(f_handle)->second;	
+					f_avg = fs_avg.find(f_handle)->second;	
 				}
-				task_row.f = *f;
+				task_row.f = f;
 				rs = dw_row_runner.exec(row_ids, n_rows, dense_map_row<A,B>, f_avg, NULL);
 			}else{
-				const DW_FUNCTION_C2R * f = fs_c2r.find(f_handle)->second;
-				DW_FUNCTION_MAVG  f_avg = NULL;
+				const DW_FUNCTION_C2R f = fs_c2r.find(f_handle)->second;
+				DW_FUNCTION_MAVG f_avg = NULL;
 				if(fs_avg.find(f_handle) != fs_avg.end()){
-					f_avg = *fs_avg.find(f_handle)->second;	
+					f_avg = fs_avg.find(f_handle)->second;	
 				}
-				task_c2r.f = *f;
+				task_c2r.f = f;
 				rs = dw_c2r_runner.exec(col_ids, n_cols, dense_map_c2r<A,B>, f_avg, NULL);
 			}
 		}
 
-		// Report runtime and throughput statistics.
-		//
-		double data_byte = 1.0 * sizeof(A) * n_rows * n_cols;
-		double te = t.elapsed();
-		double throughput_gb = data_byte / te / 1024 / 1024 / 1024;
-		std::cout.precision(3);
-		std::cout << "[DimmWitted FUNC=" << f_handle << "] " 
-				  << "TIME=" << std::setw(6) << te << " secs"
-				  << " THROUGHPUT=" << std::setw(6) << throughput_gb << " GB/sec." << std::endl;
-		
 		return rs;
 	}
 

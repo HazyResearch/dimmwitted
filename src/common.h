@@ -33,7 +33,7 @@ template<class A>
 class DenseVector{
 public:
     A * p;
-    int n;
+    long n;
     DenseVector(A * _p, int _n) :
         p(_p), n(_n){}
 };
@@ -57,7 +57,7 @@ class SparseVector{
 public:
     A * p;
     long * idxs;
-    int n;
+    long n;
     SparseVector(A * _p, long * _idxs, int _n) :
         p(_p), idxs(_idxs), n(_n){}
 };

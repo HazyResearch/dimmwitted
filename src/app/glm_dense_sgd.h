@@ -182,7 +182,13 @@ double test_glm_dense_sgd(){
     }
     std::cout.precision(8);
     std::cout << sum << "    loss=" << loss << std::endl;
+
+    Timer t;
     dw.exec(f_handle_grad);
+    double data_byte = 1.0 * sizeof(double) * nexp * nfeat;
+    double te = t.elapsed();
+    double throughput_gb = data_byte / te / 1024 / 1024 / 1024;
+    std::cout << "TIME=" << te << " secs" << " THROUGHPUT=" << throughput_gb << " GB/sec." << std::endl;
   }
 
   // Return the sum of the model. This value should be 
