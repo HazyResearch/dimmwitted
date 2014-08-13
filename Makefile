@@ -14,10 +14,6 @@ test_dep:
 	
 test:
 
-	clang++ -O3 -std=c++11 -stdlib=libc++ -I./test -I./src -I./lib/gtest-1.7.0/include/ -I./lib/gtest-1.7.0/  -c test/glm_sparse.cc
+	clang++ -O3 -std=c++11 -stdlib=libc++ -I./test -I./src -I./lib/gtest-1.7.0/include/ -I./lib/gtest-1.7.0/  -c test/glm.cc
 
-	clang++ -O3 -std=c++11 -stdlib=libc++ -I./test -I./src -I./lib/gtest-1.7.0/include/ -I./lib/gtest-1.7.0/  -c test/glm_dense.cc
-
-	clang++ gtest_main.o  glm_sparse.o gtest-all.o -o run_test_sparse
-
-	clang++ gtest_main.o  glm_dense.o gtest-all.o -o run_test_dense
+	clang++ gtest_main.o  glm.o gtest-all.o -o run_test
