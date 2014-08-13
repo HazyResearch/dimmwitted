@@ -25,6 +25,7 @@
 #include <assert.h>
 #include <iomanip>  
 #include <future>
+#include <unistd.h>
 
 /**
  * \brief Class for dense vector of type A.
