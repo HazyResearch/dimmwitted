@@ -36,6 +36,12 @@ function get_libpath()
 	return _libpath
 end
 
+function hi()
+	@eval ccall(($(string("Hello")), $(_libpath)), Void, ()) 
+	return nothing
+end
+
+
 function open{DATATYPE, MODELTYPE}(examples::Array{DATATYPE,2}, model::Array{MODELTYPE,1}, _modelrepl, _datarepl, _acmethod)
 
 	modelrepl = convert(Cint, _modelrepl)

@@ -864,7 +864,9 @@ double DenseDimmWitted_Exec(void * p_dw, unsigned int fhandle){
 			->exec(fhandle);
 }
 
-
+void Hello(){
+	std::cout << "Hi! -- by DimmWitted" << std::endl;
+}
 
 
 

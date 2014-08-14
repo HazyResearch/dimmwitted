@@ -42,6 +42,8 @@ extern "C" {
 
 	double DenseDimmWitted_Exec2(void * p_dw, unsigned int fhandle, int, int, int);
 
+	void Hello();
+
 	void DenseDimmWitted_Register_ModelAvg2(
 		void*, unsigned int, void (*F_AVG) (jl_array_t** const p_models, int nreplicas, int ireplica), int, int, int);
 
