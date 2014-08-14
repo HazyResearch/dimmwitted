@@ -26,7 +26,7 @@
 template<class RDTYPE,
          class WRTYPE,
          DataReplType DATAREPL>
-class DWRun<RDTYPE, WRTYPE, DW_STRAWMAN, DATAREPL> {  
+class DWRun<RDTYPE, WRTYPE, DW_MODELREPL_SINGLETHREAD_DEBUG, DATAREPL> {  
 public:
   
   const RDTYPE * const RDPTR;

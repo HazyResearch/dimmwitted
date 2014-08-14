@@ -39,7 +39,7 @@ double _hogwild_run_map(double (*p_map) (long, const RDTYPE * const, WRTYPE * co
 template<class RDTYPE,
          class WRTYPE,
          DataReplType DATAREPL>
-class DWRun<RDTYPE, WRTYPE, DW_HOGWILD,
+class DWRun<RDTYPE, WRTYPE, DW_MODELREPL_PERMACHINE,
         DATAREPL> {  
 public:
   
@@ -69,12 +69,13 @@ public:
     std::vector<std::future<double>> futures;
 
     int n_sharding = getNumberOfCores();
+    //int n_sharding = 2;
 
     for(int i_sharding=0;i_sharding<n_sharding;i_sharding++){
       long start = ((long)(ntasks/n_sharding)+1) * i_sharding;
       long end = ((long)(ntasks/n_sharding)+1) * (i_sharding+1);
       end = end >= ntasks ? ntasks : end;
-      if(DATAREPL == DW_FULL){
+      if(DATAREPL == DW_DATAREPL_FULL){
         futures.push_back(std::async(_hogwild_run_map<RDTYPE, WRTYPE>, p_map, RDPTR, WRPTR, tasks, 0, ntasks));
       }else{
         futures.push_back(std::async(_hogwild_run_map<RDTYPE, WRTYPE>, p_map, RDPTR, WRPTR, tasks, start, end));

@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-
 #ifndef _SCHEDULER_PERNODE_H
 #define _SCHEDULER_PERNODE_H
 
@@ -60,7 +58,7 @@ void _pernode_comm(void (*p_comm) (WRTYPE ** const, int, int),
 template<class RDTYPE,
          class WRTYPE,
          DataReplType DATAREPL>
-class DWRun<RDTYPE, WRTYPE, DW_PERNODE,
+class DWRun<RDTYPE, WRTYPE, DW_MODELREPL_PERNODE,
          DATAREPL> {  
 public:
   
@@ -127,7 +125,7 @@ public:
         long end = ((long)(ntasks/total)+1) * (ct+1);
         end = end >= ntasks ? ntasks : end;
         
-        if(DATAREPL == DW_FULL){
+        if(DATAREPL == DW_DATAREPL_FULL){
           futures.push_back(std::async(_pernode_run_map<RDTYPE, WRTYPE>, p_map, RDPTR, model_replicas[i_sharding], tasks, 0, ntasks, i_sharding));
         }else{
           futures.push_back(std::async(_pernode_run_map<RDTYPE, WRTYPE>, p_map, RDPTR, model_replicas[i_sharding], tasks, start, end, i_sharding));

@@ -13,8 +13,8 @@
 // limitations under the License.
 
 
-#ifndef _DENSE_DW_H
-#define _DENSE_DW_H
+#ifndef _DENSE_DW_JULIA_H
+#define _DENSE_DW_JULIA_H
 
 #include "util.h"
 #include "dimmwitted_const.h"
@@ -26,22 +26,25 @@
 #include "engine/scheduler_percore.h"
 #include "engine/scheduler_pernode.h"
 
+#include "julia.h"
+#include "julia_internal.h"
+
 /**
  * \brief Task description for the row-access method.
  *
  * \tparam A type of data elements (See DenseDimmWitted)
  * \tparam B type of model (See DenseDimmWitted)
  */
-template<class A, class B>
-class TASK_ROW{
+template<class B>
+class TASK_ROW_JULIA{
 public:
-	DenseVector<A>* row_pointers; /**<A list of pointer to rows*/
-	double (*f) (const DenseVector<A>* const, B* const);	/**<Row-access function to execute*/
-	TASK_ROW(DenseVector<A>* const _row_pointers, 
-			double (* _f) (const DenseVector<A>* const p_row, B* const p_model)):
+	jl_array_t* row_pointers; /**<A list of pointer to rows*/
+	double (*f) (const jl_array_t* const, B* const);	/**<Row-access function to execute*/
+	TASK_ROW_JULIA(jl_array_t* const _row_pointers, 
+			double (* _f) (const jl_array_t* const p_row, B* const p_model)):
 		row_pointers(_row_pointers), f(_f)
 	{}
-	TASK_ROW(){}
+	TASK_ROW_JULIA(){}
 };
 
 /**
@@ -50,16 +53,16 @@ public:
  * \tparam A type of data elements (See DenseDimmWitted)
  * \tparam B type of model (See DenseDimmWitted)
  */
-template<class A, class B>
-class TASK_COL{
+template<class B>
+class TASK_COL_JULIA{
 public:
-	DenseVector<A>* col_pointers; /**<A list of pointer to columns*/
-	double (*f) (const DenseVector<A>* const, B* const);	/**<Column-access function to execute*/
-	TASK_COL(DenseVector<A>* const _col_pointers,
-		double (*_f) (const DenseVector<A>* const, B* const)):
+	jl_array_t* col_pointers; /**<A list of pointer to columns*/
+	double (*f) (const jl_array_t* const, B* const);	/**<Column-access function to execute*/
+	TASK_COL_JULIA(jl_array_t* const _col_pointers,
+		double (*_f) (const jl_array_t* const, B* const)):
 		col_pointers(_col_pointers), f(_f)
 	{}
-	TASK_COL(){}
+	TASK_COL_JULIA(){}
 };
 
 /**
@@ -68,25 +71,25 @@ public:
  * \tparam A type of data elements (See DenseDimmWitted)
  * \tparam B type of model (See DenseDimmWitted)
  */
-template<class A, class B>
-class TASK_C2R{
+template<class B>
+class TASK_C2R_JULIA{
 public:
-	DenseVector<A>*  col_pointers; /**<A list of pointer to columns*/
+	jl_array_t*  col_pointers; /**<A list of pointer to columns*/
 	Pair<long, long> *  c2r_col_2_rowbuffer_idxs; /**<See DenseDimmWitted::c2r_col_2_rowbuffer_idxs*/
-	DenseVector<A>*  c2r_row_pointers_buffer; /**<See DenseDimmWitted::_c2r_row_pointers_buffer*/
-	double (*f) (const DenseVector<A>* const p_col, int i_col,
-																		 const DenseVector<A>* const p_rows, int, B* const);
-																	/**<Column-to-row-access function to execute*/
+	jl_array_t*  c2r_row_pointers_buffer; /**<See DenseDimmWitted::_c2r_row_pointers_buffer*/
+	double (*f) (const jl_array_t* const p_col, int i_col,
+									const jl_array_t* const p_rows, int, B* const);
+									/**<Column-to-row-access function to execute*/
 
-	TASK_C2R(DenseVector<A>* _col_pointers, Pair<long, long> * _c2r_col_2_rowbuffer_idxs,
-		DenseVector<A>* _c2r_row_pointers_buffer, 
-		double (*_f) (const DenseVector<A>* const p_col, int i_col,
-																		 const DenseVector<A>* const p_rows, int, B* const)):
+	TASK_C2R_JULIA(jl_array_t* _col_pointers, Pair<long, long> * _c2r_col_2_rowbuffer_idxs,
+		jl_array_t* _c2r_row_pointers_buffer, 
+		double (*_f) (const jl_array_t* const p_col, int i_col,
+					const jl_array_t* const p_rows, int, B* const)):
 		col_pointers(_col_pointers), c2r_col_2_rowbuffer_idxs(_c2r_col_2_rowbuffer_idxs),
 		c2r_row_pointers_buffer(_c2r_row_pointers_buffer), f(_f)
 	{}
 
-	TASK_C2R(){}
+	TASK_C2R_JULIA(){}
 
 };
 
@@ -96,8 +99,8 @@ public:
  * \tparam A type of data elements (See DenseDimmWitted)
  * \tparam B type of model (See DenseDimmWitted)
  */
-template<class A, class B>
-double dense_map_row (long i_task, const TASK_ROW<A,B> * const rddata, B * const wrdata){
+template<class B>
+double dense_map_row_JULIA (long i_task, const TASK_ROW_JULIA<B> * const rddata, B * const wrdata){
 	return rddata->f(&rddata->row_pointers[i_task], wrdata);
 }
 
@@ -107,8 +110,8 @@ double dense_map_row (long i_task, const TASK_ROW<A,B> * const rddata, B * const
  * \tparam A type of data elements (See DenseDimmWitted)
  * \tparam B type of model (See DenseDimmWitted)
  */
-template<class A, class B>
-double dense_map_col (long i_task, const TASK_COL<A,B> * const rddata, B * const wrdata){
+template<class B>
+double dense_map_col_JULIA (long i_task, const TASK_COL_JULIA<B> * const rddata, B * const wrdata){
 	return rddata->f(&rddata->col_pointers[i_task], wrdata);
 }
 
@@ -118,8 +121,8 @@ double dense_map_col (long i_task, const TASK_COL<A,B> * const rddata, B * const
  * \tparam A type of data elements (See DenseDimmWitted)
  * \tparam B type of model (See DenseDimmWitted)
  */
-template<class A, class B>
-double dense_map_c2r (long i_task, const TASK_C2R<A,B> * const rddata, B * const wrdata){
+template<class B>
+double dense_map_c2r_JULIA (long i_task, const TASK_C2R_JULIA<B> * const rddata, B * const wrdata){
 	const Pair<long, long> & row_ptrs = rddata->c2r_col_2_rowbuffer_idxs[i_task];
 	return rddata->f(&rddata->col_pointers[i_task], i_task, &(rddata->c2r_row_pointers_buffer[row_ptrs.first]), 
 						row_ptrs.second, wrdata);
@@ -131,9 +134,22 @@ double dense_map_c2r (long i_task, const TASK_C2R<A,B> * const rddata, B * const
  * \tparam A type of data elements (See DenseDimmWitted)
  * \tparam B type of model (See DenseDimmWitted)
  */
-template<class A, class B>
-void dense_model_allocator (B ** const a, const B * const b){
-  *a = new B(*b);
+template<class B>
+void dense_model_allocator_JULIA (jl_array_t ** const a, const jl_array_t * const b){
+	(*a) = (jl_array_t*) ::operator new(((sizeof(jl_array_t)+jl_array_ndimwords(1)*sizeof(size_t)+15)&-16));
+	(*a)->type = (b)->type;
+	(*a)->data = (void *) new char[(b)->length*(b)->elsize];
+	(*a)->length = (b)->length;
+	(*a)->elsize = (b)->elsize;
+	(*a)->ptrarray = (b)->ptrarray;
+	(*a)->ndims = (b)->ndims;
+	(*a)->isshared = (b)->isshared;
+	(*a)->isaligned = (b)->isaligned;
+	(*a)->how = (b)->how;
+	(*a)->nrows = (b)->nrows;
+	(*a)->maxsize = (b)->maxsize;
+	(*a)->offset = (b)->offset;
+	memcpy((*a)->data, (b)->data, (b)->length*(b)->elsize);
 }
 
 /**
@@ -146,24 +162,24 @@ void dense_model_allocator (B ** const a, const B * const b){
  * \tparam data_repl_type Data replication strategy.
  * \tparam access_mode Access Method
  */
-template<class A, class B, ModelReplType model_repl_type, DataReplType data_repl_type, AccessMode access_mode>
-class DenseDimmWitted{
+template<class B, ModelReplType model_repl_type, DataReplType data_repl_type, AccessMode access_mode>
+class DenseDimmWitted_Julia{
 public:
 
-	typedef double (*DW_FUNCTION_ROW) (const DenseVector<A>* const, B* const);
+	typedef double (*DW_FUNCTION_ROW) (const jl_array_t* const, B* const);
 		/**<\brief Type of row-access function*/
 
-	typedef double (*DW_FUNCTION_COL) (const DenseVector<A>* const, B* const);
+	typedef double (*DW_FUNCTION_COL) (const jl_array_t* const, B* const);
 		/**<\brief Type of column-access function*/
 
-	typedef double (*DW_FUNCTION_C2R) (const DenseVector<A>* const p_col, int i_col,
-																		 const DenseVector<A>* const p_rows, int, B* const);
+	typedef double (*DW_FUNCTION_C2R) (const jl_array_t* const p_col, int i_col,
+														const jl_array_t* const p_rows, int, B* const);
 		/**<\brief Type of column-to-row-access function*/
 
 	typedef void (*DW_FUNCTION_MAVG) (B** const p_models, int nreplicas, int ireplica);
 		/**<\brief Type of the function that conducts model averaging*/
 
-	A** const p_data; /**<\brief Pointer to the data, which is a two dimensional array of type A*/
+	char* const p_data; /**<\brief Pointer to the data, which is a two dimensional array of type A*/
 
 	long n_rows; /**<\brief Number of rows of the data.*/
 
@@ -187,11 +203,11 @@ public:
 	
 	unsigned int current_handle_id;	/**<\brief Function handle for the next function-registering.*/
 
-	DenseVector<A>* const row_pointers; /**<\brief Pointer to each row of the data.*/
+	jl_array_t* const row_pointers; /**<\brief Pointer to each row of the data.*/
 
-	DenseVector<A>* const col_pointers; /**<\brief Pointer to each column of the data.*/
+	jl_array_t* const col_pointers; /**<\brief Pointer to each column of the data.*/
 
-	DenseVector<A>* _c2r_row_pointers_buffer; /**<\brief For column-to-row-access, this data structure
+	jl_array_t* _c2r_row_pointers_buffer; /**<\brief For column-to-row-access, this data structure
                                               stores the following information. For a matrix
                                               \verbatim
                                                      Col1 Col2 Col3
@@ -225,7 +241,7 @@ public:
                                               the position a, and contain b elements.
                                               */
 
-	A* _new_ele_buffer; /**<\brief If the input is row-wise storage, and the user requires column-wise
+	char * _new_ele_buffer; /**<\brief If the input is row-wise storage, and the user requires column-wise
                          access, this pointer points to the re-structured region of
                          the memory for column-wise storage*/
 
@@ -235,19 +251,19 @@ public:
 	long * col_ids; /**<\brief A list of indexes that the system will access. For column-access or 
 									 column-to-row access, it will be [0,ncols]. */
 
-	TASK_ROW<A, B> task_row; /**<\brief Task description for row-access. */
+	TASK_ROW_JULIA<B> task_row; /**<\brief Task description for row-access. */
 
-	TASK_COL<A, B> task_col; /**<\brief Task description for column-access. */
+	TASK_COL_JULIA<B> task_col; /**<\brief Task description for column-access. */
 
-	TASK_C2R<A, B> task_c2r; /**<\brief Task description for column-to-row access. */
+	TASK_C2R_JULIA<B> task_c2r; /**<\brief Task description for column-to-row access. */
 
-	DWRun<TASK_ROW<A,B>, B, model_repl_type, data_repl_type> dw_row_runner;
+	DWRun<TASK_ROW_JULIA<B>, B, model_repl_type, data_repl_type> dw_row_runner;
 		/**<\brief Execution backend for row-access. See engine/scheduler.h. */
 
-	DWRun<TASK_COL<A,B>, B, model_repl_type, data_repl_type> dw_col_runner;
+	DWRun<TASK_COL_JULIA<B>, B, model_repl_type, data_repl_type> dw_col_runner;
 		/**<\brief Execution backend for column-access. See engine/scheduler.h. */
 
-	DWRun<TASK_C2R<A,B>, B, model_repl_type, data_repl_type> dw_c2r_runner;
+	DWRun<TASK_C2R_JULIA<B>, B, model_repl_type, data_repl_type> dw_c2r_runner;
 		/**<\brief Execution backend for column-to-row-access. See engine/scheduler.h. */
 
 public:
@@ -260,19 +276,19 @@ public:
 	 * \param _n_cols Number of columns in the data.
 	 * \param _model Pointer to the model.
 	 */
-	DenseDimmWitted(A** _data, long _n_rows, long _n_cols, B * const _model
-	):
-		p_data(_data), p_model(_model),
+	DenseDimmWitted_Julia(void * _data, jl_value_t *data_el_type, 
+						  long _n_rows, long _n_cols, B * const _model):
+		p_data((char*)_data), p_model(_model),
 		n_rows(_n_rows), n_cols(_n_cols),
 		current_handle_id(0),
-		row_pointers((DenseVector<A>*) ::operator new(_n_rows * sizeof(DenseVector<A>))),
-		col_pointers((DenseVector<A>*) ::operator new(_n_cols * sizeof(DenseVector<A>))),
+		row_pointers((jl_array_t*) ::operator new(_n_rows * ((sizeof(jl_array_t)+jl_array_ndimwords(1)*sizeof(size_t)+15)&-16))),
+		col_pointers((jl_array_t*) ::operator new(_n_cols * ((sizeof(jl_array_t)+jl_array_ndimwords(1)*sizeof(size_t)+15)&-16))),
 		c2r_col_2_rowbuffer_idxs(new Pair<long, long>[_n_rows]),
 		row_ids(new long[_n_rows]),
 		col_ids(new long[_n_cols]),
-		dw_row_runner(DWRun<TASK_ROW<A,B>, B, model_repl_type, data_repl_type>(&task_row, p_model, dense_model_allocator<A,B>)),
-		dw_col_runner(DWRun<TASK_COL<A,B>, B, model_repl_type, data_repl_type>(&task_col, p_model, dense_model_allocator<A,B>)),
-		dw_c2r_runner(DWRun<TASK_C2R<A,B>, B, model_repl_type, data_repl_type>(&task_c2r, p_model, dense_model_allocator<A,B>))
+		dw_row_runner(DWRun<TASK_ROW_JULIA<B>, B, model_repl_type, data_repl_type>(&task_row, p_model, dense_model_allocator_JULIA<B>)),
+		dw_col_runner(DWRun<TASK_COL_JULIA<B>, B, model_repl_type, data_repl_type>(&task_col, p_model, dense_model_allocator_JULIA<B>)),
+		dw_c2r_runner(DWRun<TASK_C2R_JULIA<B>, B, model_repl_type, data_repl_type>(&task_c2r, p_model, dense_model_allocator_JULIA<B>))
 	{
 		for(int i=0;i<n_rows;i++){
 			row_ids[i] = i;
@@ -281,14 +297,30 @@ public:
 			col_ids[j] = j;
 		}
 
+		size_t elsz = jl_datatype_size(data_el_type);
 		if(access_mode == DW_ACCESS_ROW){
 			for(int i=0;i<n_rows;i++){
-				row_pointers[i] = DenseVector<A>(p_data[i], n_cols);
+				row_pointers[i].type = data_el_type;
+				row_pointers[i].data = (void*) &(p_data[i*elsz*n_cols]);
+				row_pointers[i].length = n_cols;
+				row_pointers[i].elsize = elsz;
+				row_pointers[i].ptrarray = false;
+				row_pointers[i].ndims = 1;
+				row_pointers[i].isshared = 1;
+				row_pointers[i].isaligned = 0;
+				row_pointers[i].how = 0;
+				row_pointers[i].nrows = n_cols;
+				row_pointers[i].maxsize = n_cols;
+				row_pointers[i].offset = 0;
+				//row_pointers[i] = DenseVector<A>(p_data[i], n_cols);
 			}
 			task_row.row_pointers = row_pointers;
 			dw_row_runner.prepare();
 
-		}else{
+		}
+		/*
+		else{
+			assert(false);
 			_new_ele_buffer = new A[n_rows*n_cols];
 			long ct = 0;
 			for(int j=0;j<n_cols;j++){
@@ -333,6 +365,7 @@ public:
 
 			}
 		}
+		*/
 	}
 
 	/**
@@ -341,7 +374,7 @@ public:
 	 * \return function handle that can used later to call this function.
 	 */
 	unsigned int register_row(
-		double (* f) (const DenseVector<A>* const p_row, B* const p_model)
+		double (* f) (const jl_array_t* const p_row, B* const p_model)
 	){	
 		fs_row[current_handle_id] = f;
 		return current_handle_id ++;
@@ -353,7 +386,7 @@ public:
 	 * \return function handle that can used later to call this function.
 	 */
 	unsigned int register_col(
-		double (* f) (const DenseVector<A>* const p_col, int n_row, B* const p_model)
+		double (* f) (const jl_array_t* const p_col, int n_row, B* const p_model)
 	){
 		fs_col[current_handle_id] = f;
 		return current_handle_id ++;
@@ -365,8 +398,8 @@ public:
 	 * \return function handle that can used later to call this function.
 	 */
 	unsigned int register_c2r(
-		double (* f) (const DenseVector<A>* const p_col, int i_col,
-					const DenseVector<A>* const p_rows, int n_rows,
+		double (* f) (const jl_array_t* const p_col, int i_col,
+					const jl_array_t* const p_rows, int n_rows,
 					B* const p_model)
 	){
 		fs_c2r[current_handle_id] = f;
@@ -397,6 +430,8 @@ public:
 
 		double rs = 0.0;
 
+		Timer t;
+
 		if(access_mode == DW_ACCESS_ROW){
 			const DW_FUNCTION_ROW f = fs_row.find(f_handle)->second;
 			DW_FUNCTION_MAVG f_avg = NULL;
@@ -404,8 +439,11 @@ public:
 				f_avg = fs_avg.find(f_handle)->second;	
 			}
 			task_row.f = f;
-			rs = dw_row_runner.exec(row_ids, n_rows, dense_map_row<A,B>, f_avg, NULL);
-		}else if(access_mode == DW_ACCESS_COL){
+			rs = dw_row_runner.exec(row_ids, n_rows, dense_map_row_JULIA<B>, f_avg, NULL);
+		}
+
+		/*
+		else if(access_mode == DW_ACCESS_COL){
 			const DW_FUNCTION_COL f = fs_col.find(f_handle)->second;
 			DW_FUNCTION_MAVG f_avg = NULL;
 			if(fs_avg.find(f_handle) != fs_avg.end()){
@@ -432,6 +470,7 @@ public:
 				rs = dw_c2r_runner.exec(col_ids, n_cols, dense_map_c2r<A,B>, f_avg, NULL);
 			}
 		}
+		*/
 
 		return rs;
 	}

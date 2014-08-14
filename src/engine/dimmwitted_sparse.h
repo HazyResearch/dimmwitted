@@ -16,7 +16,9 @@
 #ifndef _SPARSE_DW_H
 #define _SPARSE_DW_H
 
-#include "common.h"
+#include "util.h"
+#include "dimmwitted_const.h"
+#include "dimmwitted_dstruct.h"
 
 #include "engine/scheduler.h"
 #include "engine/scheduler_strawman.h"
@@ -192,7 +194,7 @@ public:
 			col_ids[j] = j;
 		}
 
-		if(access_mode == DW_ROW || access_mode == DW_C2R){
+		if(access_mode == DW_ACCESS_ROW || access_mode == DW_ACCESS_C2R){
 			for(int i=0;i<n_rows;i++){
 				if(i==n_rows-1){
 					row_pointers[i] = SparseVector<A>(&p_data[rows[i]], &cols[rows[i]], n_elems - rows[i]);
@@ -264,7 +266,7 @@ public:
 			task_col.col_pointers = col_pointers;
 			dw_col_runner.prepare();
 
-			if(access_mode == DW_C2R){
+			if(access_mode == DW_ACCESS_C2R){
 
 				long ct = 0;
 				for(int j=0;j<n_cols;j++){
@@ -322,27 +324,25 @@ public:
 
 		double rs = 0.0;
 
-		if(access_mode == DW_ROW){
+		if(access_mode == DW_ACCESS_ROW){
 			const DW_FUNCTION_ROW * const f = fs_row.find(f_handle)->second;
 			DW_FUNCTION_MAVG f_avg = NULL;
 			if(fs_avg.find(f_handle) != fs_avg.end()){
 				f_avg = *fs_avg.find(f_handle)->second;	
 			}
 			task_row.f = *f;
-			dw_row_runner.prepare();
 			rs = dw_row_runner.exec(row_ids, n_rows, sparse_map_row<A,B>, f_avg, NULL);
 
-		}else if(access_mode == DW_COL){
+		}else if(access_mode == DW_ACCESS_COL){
 			const DW_FUNCTION_COL * const f = fs_col.find(f_handle)->second;
 			DW_FUNCTION_MAVG  f_avg = NULL;
 			if(fs_avg.find(f_handle) != fs_avg.end()){
 				f_avg = *fs_avg.find(f_handle)->second;	
 			}
 			task_col.f = *f;
-			dw_col_runner.prepare();
 			rs = dw_col_runner.exec(col_ids, n_cols, sparse_map_col<A,B>, f_avg, NULL);
 
-		}else if(access_mode == DW_C2R){
+		}else if(access_mode == DW_ACCESS_C2R){
 			if(fs_row.find(f_handle) != fs_row.end()){
 				const DW_FUNCTION_ROW * const f = fs_row.find(f_handle)->second;
 				DW_FUNCTION_MAVG  f_avg = NULL;

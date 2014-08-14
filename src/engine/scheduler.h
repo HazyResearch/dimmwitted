@@ -16,8 +16,7 @@
 #ifndef _SCHEDULER_H
 #define _SCHEDULER_H
 
-#include "common.h"
-
+#include "util.h"
 
 /**
  * \brief This is the actual execution engine of DimmWitted.

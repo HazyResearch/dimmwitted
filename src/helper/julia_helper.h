@@ -2,8 +2,10 @@
 #ifndef _JULIA_HELPER_H
 #define _JULIA_HELPER_H
 
-#include "common.h"
-#include "engine/dimmwitted_dense.h"
+#include "julia.h"
+#include "julia_internal.h"
+#include "dimmwitted.h"
+#include "engine/dimmwitted_dense_julia.h"
 
 class JuliaModle{
 public:
@@ -24,6 +26,20 @@ public:
 
 extern "C" {
 
+	void * DenseDimmWitted_Open2(jl_value_t *data_type, jl_value_t *model_type, \
+								long data_nrows, long data_ncols, long model_nelems, \
+								void * data, void * model, int, int, int);
+
+	unsigned int DenseDimmWitted_Register_Row2(
+		void *, double (*F_ROW) (const jl_array_t * const, jl_array_t *));
+
+	double DenseDimmWitted_Exec2(void * p_dw, unsigned int fhandle);
+
+	void DenseDimmWitted_Register_ModelAvg2(
+		void*, unsigned int, void (*F_AVG) (jl_array_t** const p_models, int nreplicas, int ireplica));
+
+
+
 	void * DenseDimmWitted_Open(double **, long, long, double *, long, int, int, int);
 
 	unsigned int DenseDimmWitted_Register_Row(void*, double (*F_ROW) (const DenseVector<double> * const, JuliaModle *));
@@ -33,7 +49,5 @@ extern "C" {
 	void Print(void *);
 
 }
-
-
 
 #endif

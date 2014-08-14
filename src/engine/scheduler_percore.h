@@ -41,7 +41,7 @@ double _percore_run_map(double (*p_map) (long, const RDTYPE * const, WRTYPE * co
 template<class RDTYPE,
          class WRTYPE,
          DataReplType DATAREPL>
-class DWRun<RDTYPE, WRTYPE, DW_PERCORE,
+class DWRun<RDTYPE, WRTYPE, DW_MODELREPL_PERCORE,
         DATAREPL> {  
 public:
   
@@ -79,14 +79,13 @@ public:
     std::vector<std::future<double>> futures;
 
     long n_sharding = getNumberOfCores();
-
     double rs = 0.0;
     
     for(int i_sharding=0;i_sharding<n_sharding;i_sharding++){
       long start = ((long)(ntasks/n_sharding)+1) * i_sharding;
       long end = ((long)(ntasks/n_sharding)+1) * (i_sharding+1);
       end = end >= ntasks ? ntasks : end;
-      if(DATAREPL == DW_FULL){
+      if(DATAREPL == DW_DATAREPL_FULL){
         futures.push_back(std::async(_percore_run_map<RDTYPE, WRTYPE>, p_map, RDPTR, model_replicas[i_sharding], tasks, 0, ntasks));
       }else{
         futures.push_back(std::async(_percore_run_map<RDTYPE, WRTYPE>, p_map, RDPTR, model_replicas[i_sharding], tasks, start, end));

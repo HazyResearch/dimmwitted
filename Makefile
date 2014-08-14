@@ -7,7 +7,7 @@ CPP_FLAG = -O3 -std=c++11 -stdlib=libc++
 CPP_INCLUDE = -I./src
 
 exp:
-	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) src/main.cpp -o example
+	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) examples/logistic_regression_dense_sgd.cpp -o example
 
 test_dep:
 
@@ -22,3 +22,9 @@ runtest:
 	$(CXX) $(CPP_FLAG) gtest_main.o  glm.o gtest-all.o -o run_test
 
 	./run_test
+
+julia:
+
+	clang++ -I./src -I./lib/julia/src/ -I./lib/libsupport/ -I./lib/libuv/include/ \
+			-O3 -std=c++11 -stdlib=libc++ -dynamiclib src/helper/julia_helper.cpp \
+			-o libdw_julia.dylib
