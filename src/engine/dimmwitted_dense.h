@@ -267,7 +267,7 @@ public:
 		current_handle_id(0),
 		row_pointers((DenseVector<A>*) ::operator new(_n_rows * sizeof(DenseVector<A>))),
 		col_pointers((DenseVector<A>*) ::operator new(_n_cols * sizeof(DenseVector<A>))),
-		c2r_col_2_rowbuffer_idxs(new Pair<long, long>[_n_rows]),
+		c2r_col_2_rowbuffer_idxs(new Pair<long, long>[_n_cols]),
 		row_ids(new long[_n_rows]),
 		col_ids(new long[_n_cols]),
 		dw_row_runner(DWRun<TASK_ROW<A,B>, B, model_repl_type, data_repl_type>(&task_row, p_model, dense_model_allocator<A,B>)),

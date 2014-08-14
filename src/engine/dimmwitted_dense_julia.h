@@ -75,16 +75,16 @@ template<class B>
 class TASK_C2R_JULIA{
 public:
 	jl_array_t*  col_pointers; /**<A list of pointer to columns*/
-	Pair<long, long> *  c2r_col_2_rowbuffer_idxs; /**<See DenseDimmWitted::c2r_col_2_rowbuffer_idxs*/
-	jl_array_t*  c2r_row_pointers_buffer; /**<See DenseDimmWitted::_c2r_row_pointers_buffer*/
+	Pair<long, jl_array_t*> *  c2r_col_2_rowbuffer_idxs; /**<See DenseDimmWitted::c2r_col_2_rowbuffer_idxs*/
+	jl_array_t**  c2r_row_pointers_buffer; /**<See DenseDimmWitted::_c2r_row_pointers_buffer*/
 	double (*f) (const jl_array_t* const p_col, int i_col,
-									const jl_array_t* const p_rows, int, B* const);
+									const jl_array_t* const p_rows, B* const);
 									/**<Column-to-row-access function to execute*/
 
-	TASK_C2R_JULIA(jl_array_t* _col_pointers, Pair<long, long> * _c2r_col_2_rowbuffer_idxs,
-		jl_array_t* _c2r_row_pointers_buffer, 
+	TASK_C2R_JULIA(jl_array_t* _col_pointers, Pair<long, jl_array_t*> * _c2r_col_2_rowbuffer_idxs,
+		jl_array_t** _c2r_row_pointers_buffer, 
 		double (*_f) (const jl_array_t* const p_col, int i_col,
-					const jl_array_t* const p_rows, int, B* const)):
+					const jl_array_t* const p_rows, B* const)):
 		col_pointers(_col_pointers), c2r_col_2_rowbuffer_idxs(_c2r_col_2_rowbuffer_idxs),
 		c2r_row_pointers_buffer(_c2r_row_pointers_buffer), f(_f)
 	{}
@@ -123,9 +123,12 @@ double dense_map_col_JULIA (long i_task, const TASK_COL_JULIA<B> * const rddata,
  */
 template<class B>
 double dense_map_c2r_JULIA (long i_task, const TASK_C2R_JULIA<B> * const rddata, B * const wrdata){
-	const Pair<long, long> & row_ptrs = rddata->c2r_col_2_rowbuffer_idxs[i_task];
-	return rddata->f(&rddata->col_pointers[i_task], i_task, &(rddata->c2r_row_pointers_buffer[row_ptrs.first]), 
-						row_ptrs.second, wrdata);
+	const Pair<long, jl_array_t*> & row_ptrs = rddata->c2r_col_2_rowbuffer_idxs[i_task];
+	//std::cout << "###" << row_ptrs.first << "     " << row_ptrs.second << std::endl;
+	//std::cout << "!!!" << (void*) rddata->c2r_col_2_rowbuffer_idxs << std::endl;
+
+	return rddata->f(&rddata->col_pointers[i_task], i_task, row_ptrs.second, wrdata);
+	return 1.0;
 }
 
 /**
@@ -166,6 +169,12 @@ template<class B, ModelReplType model_repl_type, DataReplType data_repl_type, Ac
 class DenseDimmWitted_Julia{
 public:
 
+	ModelReplType _model_repl_type;
+
+	DataReplType _data_repl_type;
+
+	AccessMode _access_mode;
+
 	typedef double (*DW_FUNCTION_ROW) (const jl_array_t* const, B* const);
 		/**<\brief Type of row-access function*/
 
@@ -173,7 +182,7 @@ public:
 		/**<\brief Type of column-access function*/
 
 	typedef double (*DW_FUNCTION_C2R) (const jl_array_t* const p_col, int i_col,
-														const jl_array_t* const p_rows, int, B* const);
+														const jl_array_t* const p_rows, B* const);
 		/**<\brief Type of column-to-row-access function*/
 
 	typedef void (*DW_FUNCTION_MAVG) (B** const p_models, int nreplicas, int ireplica);
@@ -207,7 +216,7 @@ public:
 
 	jl_array_t* const col_pointers; /**<\brief Pointer to each column of the data.*/
 
-	jl_array_t* _c2r_row_pointers_buffer; /**<\brief For column-to-row-access, this data structure
+	jl_array_t** _c2r_row_pointers_buffer; /**<\brief For column-to-row-access, this data structure
                                               stores the following information. For a matrix
                                               \verbatim
                                                      Col1 Col2 Col3
@@ -223,7 +232,7 @@ public:
                                               Col2, and the last Row1 Row2 is for Col3.
                                             */
 
-	Pair<long, long> * const c2r_col_2_rowbuffer_idxs; /**<\brief For For column-to-row-access, this data structure
+	Pair<long, jl_array_t*> * const c2r_col_2_rowbuffer_idxs; /**<\brief For For column-to-row-access, this data structure
                                               stores the following information. Still use the
                                               example of DenseDimmWitted::_c2r_row_pointers_buffer, for this example
                                               matrix, this data structure contains
@@ -283,12 +292,15 @@ public:
 		current_handle_id(0),
 		row_pointers((jl_array_t*) ::operator new(_n_rows * ((sizeof(jl_array_t)+jl_array_ndimwords(1)*sizeof(size_t)+15)&-16))),
 		col_pointers((jl_array_t*) ::operator new(_n_cols * ((sizeof(jl_array_t)+jl_array_ndimwords(1)*sizeof(size_t)+15)&-16))),
-		c2r_col_2_rowbuffer_idxs(new Pair<long, long>[_n_rows]),
+		c2r_col_2_rowbuffer_idxs(new Pair<long, jl_array_t*>[_n_cols]),
 		row_ids(new long[_n_rows]),
 		col_ids(new long[_n_cols]),
 		dw_row_runner(DWRun<TASK_ROW_JULIA<B>, B, model_repl_type, data_repl_type>(&task_row, p_model, dense_model_allocator_JULIA<B>)),
 		dw_col_runner(DWRun<TASK_COL_JULIA<B>, B, model_repl_type, data_repl_type>(&task_col, p_model, dense_model_allocator_JULIA<B>)),
-		dw_c2r_runner(DWRun<TASK_C2R_JULIA<B>, B, model_repl_type, data_repl_type>(&task_c2r, p_model, dense_model_allocator_JULIA<B>))
+		dw_c2r_runner(DWRun<TASK_C2R_JULIA<B>, B, model_repl_type, data_repl_type>(&task_c2r, p_model, dense_model_allocator_JULIA<B>)),
+		_model_repl_type(model_repl_type),
+		_data_repl_type(data_repl_type),
+		_access_mode(access_mode)
 	{
 		for(int i=0;i<n_rows;i++){
 			row_ids[i] = i;
@@ -298,7 +310,7 @@ public:
 		}
 
 		size_t elsz = jl_datatype_size(data_el_type);
-		if(access_mode == DW_ACCESS_ROW){
+		if(access_mode == DW_ACCESS_ROW || access_mode == DW_ACCESS_C2R){
 			for(int i=0;i<n_rows;i++){
 				row_pointers[i].type = data_el_type;
 				row_pointers[i].data = (void*) &(p_data[i*elsz*n_cols]);
@@ -318,15 +330,25 @@ public:
 			dw_row_runner.prepare();
 
 		}
-		/*
-		else{
-			assert(false);
-			_new_ele_buffer = new A[n_rows*n_cols];
+		if(access_mode == DW_ACCESS_COL || access_mode == DW_ACCESS_C2R){
+			_new_ele_buffer = new char[n_rows*n_cols*elsz];
 			long ct = 0;
 			for(int j=0;j<n_cols;j++){
-				col_pointers[j] = DenseVector<A>(&_new_ele_buffer[ct], n_rows);
+				col_pointers[j].type = data_el_type;
+				col_pointers[j].data = (void*) &_new_ele_buffer[ct*elsz];
+				col_pointers[j].length = n_rows;
+				col_pointers[j].elsize = elsz;
+				col_pointers[j].ptrarray = false;
+				col_pointers[j].ndims = 1;
+				col_pointers[j].isshared = 1;
+				col_pointers[j].isaligned = 0;
+				col_pointers[j].how = 0;
+				col_pointers[j].nrows = n_rows;
+				col_pointers[j].maxsize = n_rows;
+				col_pointers[j].offset = 0;
 				for(int i=0;i<n_rows;i++){
-					_new_ele_buffer[ct++] = _data[i][j];
+					//_new_ele_buffer[ct++] = _data[i][j];
+					memcpy((void*)&_new_ele_buffer[(ct++)*elsz], &(p_data[(i*n_cols+j)*elsz]), elsz);
 				}
 			}
 			task_col.col_pointers = col_pointers;
@@ -334,25 +356,39 @@ public:
 
 			if(access_mode == DW_ACCESS_C2R){
 
-				for(int i=0;i<n_rows;i++){
-					row_pointers[i] = DenseVector<A>(p_data[i], n_cols);
-				}
+				char * testblock = new char[elsz];
+				memset (testblock, 0, elsz);
 
-				_c2r_row_pointers_buffer = (DenseVector<A>*) ::operator new(n_rows * n_cols * sizeof(DenseVector<A>));
+				_c2r_row_pointers_buffer = new jl_array_t*[n_rows*n_cols]; // ::operator new(n_rows * n_cols * ((sizeof(jl_array_t)+jl_array_ndimwords(1)*sizeof(size_t)+15)&-16));
 				long ct = 0;
 				for(int j=0;j<n_cols;j++){
 					c2r_col_2_rowbuffer_idxs[j].first = ct;
 					int a = 0;
 					for(int i=0;i<n_rows;i++){
-						if(col_pointers[j].p[i] != 0){
+
+						if (memcmp (testblock, &((char*)col_pointers[j].data)[i*elsz], elsz) != 0){
 							a++;
-							_c2r_row_pointers_buffer[ct].p = row_pointers[i].p;
-							_c2r_row_pointers_buffer[ct].n = row_pointers[i].n;
+
+							_c2r_row_pointers_buffer[ct] = &row_pointers[i];
 
 							ct ++;
 						}
 					}
-					c2r_col_2_rowbuffer_idxs[j].second = a;
+
+					c2r_col_2_rowbuffer_idxs[j].second = (jl_array_t*) ::operator new(((sizeof(jl_array_t)+jl_array_ndimwords(1)*sizeof(size_t)+15)&-16));
+					c2r_col_2_rowbuffer_idxs[j].second->type = jl_typeof(&row_pointers[0]);
+					c2r_col_2_rowbuffer_idxs[j].second->data = (void*) &_c2r_row_pointers_buffer[c2r_col_2_rowbuffer_idxs[j].first];
+					c2r_col_2_rowbuffer_idxs[j].second->length = a;
+					c2r_col_2_rowbuffer_idxs[j].second->elsize = sizeof(void*);
+					c2r_col_2_rowbuffer_idxs[j].second->ptrarray = true;
+					c2r_col_2_rowbuffer_idxs[j].second->ndims = 1;
+					c2r_col_2_rowbuffer_idxs[j].second->isshared = 1;
+					c2r_col_2_rowbuffer_idxs[j].second->isaligned = 0;
+					c2r_col_2_rowbuffer_idxs[j].second->how = 0;
+					c2r_col_2_rowbuffer_idxs[j].second->nrows = a;
+					c2r_col_2_rowbuffer_idxs[j].second->maxsize = a;
+					c2r_col_2_rowbuffer_idxs[j].second->offset = 0;
+
 				}
 
 				task_row.row_pointers = row_pointers;
@@ -360,12 +396,13 @@ public:
 
 				task_c2r.col_pointers = col_pointers;
 				task_c2r.c2r_col_2_rowbuffer_idxs = c2r_col_2_rowbuffer_idxs;
+
 				task_c2r.c2r_row_pointers_buffer = _c2r_row_pointers_buffer;
 				dw_c2r_runner.prepare();
 
 			}
+
 		}
-		*/
 	}
 
 	/**
@@ -386,7 +423,7 @@ public:
 	 * \return function handle that can used later to call this function.
 	 */
 	unsigned int register_col(
-		double (* f) (const jl_array_t* const p_col, int n_row, B* const p_model)
+		double (* f) (const jl_array_t* const p_col, B* const p_model)
 	){
 		fs_col[current_handle_id] = f;
 		return current_handle_id ++;
@@ -399,7 +436,7 @@ public:
 	 */
 	unsigned int register_c2r(
 		double (* f) (const jl_array_t* const p_col, int i_col,
-					const jl_array_t* const p_rows, int n_rows,
+					const jl_array_t* const p_rows,
 					B* const p_model)
 	){
 		fs_c2r[current_handle_id] = f;
@@ -440,17 +477,14 @@ public:
 			}
 			task_row.f = f;
 			rs = dw_row_runner.exec(row_ids, n_rows, dense_map_row_JULIA<B>, f_avg, NULL);
-		}
-
-		/*
-		else if(access_mode == DW_ACCESS_COL){
+		}else if(access_mode == DW_ACCESS_COL){
 			const DW_FUNCTION_COL f = fs_col.find(f_handle)->second;
 			DW_FUNCTION_MAVG f_avg = NULL;
 			if(fs_avg.find(f_handle) != fs_avg.end()){
 				f_avg = fs_avg.find(f_handle)->second;	
 			}
 			task_col.f = f;
-			rs = dw_col_runner.exec(col_ids, n_cols, dense_map_col<A,B>, f_avg, NULL);
+			rs = dw_col_runner.exec(col_ids, n_cols, dense_map_col_JULIA<B>, f_avg, NULL);
 		}else if(access_mode == DW_ACCESS_C2R){
 			if(fs_row.find(f_handle) != fs_row.end()){
 				const DW_FUNCTION_ROW  f = fs_row.find(f_handle)->second;
@@ -459,7 +493,7 @@ public:
 					f_avg = fs_avg.find(f_handle)->second;	
 				}
 				task_row.f = f;
-				rs = dw_row_runner.exec(row_ids, n_rows, dense_map_row<A,B>, f_avg, NULL);
+				rs = dw_row_runner.exec(row_ids, n_rows, dense_map_row_JULIA<B>, f_avg, NULL);
 			}else{
 				const DW_FUNCTION_C2R f = fs_c2r.find(f_handle)->second;
 				DW_FUNCTION_MAVG f_avg = NULL;
@@ -467,10 +501,14 @@ public:
 					f_avg = fs_avg.find(f_handle)->second;	
 				}
 				task_c2r.f = f;
-				rs = dw_c2r_runner.exec(col_ids, n_cols, dense_map_c2r<A,B>, f_avg, NULL);
+				rs = dw_c2r_runner.exec(col_ids, n_cols, dense_map_c2r_JULIA<B>, f_avg, NULL);
 			}
 		}
-		*/
+
+    double data_byte = 1.0 * sizeof(double) * n_rows * n_cols;
+    double te = t.elapsed();
+    double throughput_gb = data_byte / te / 1024 / 1024 / 1024;
+    std::cout << "TIME=" << te << " secs" << " THROUGHPUT=" << throughput_gb << " GB/sec." << std::endl;
 
 		return rs;
 	}

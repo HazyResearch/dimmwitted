@@ -31,12 +31,19 @@ extern "C" {
 								void * data, void * model, int, int, int);
 
 	unsigned int DenseDimmWitted_Register_Row2(
-		void *, double (*F_ROW) (const jl_array_t * const, jl_array_t *));
+		void *, double (*F_ROW) (const jl_array_t * const, jl_array_t *), int, int, int);
 
-	double DenseDimmWitted_Exec2(void * p_dw, unsigned int fhandle);
+	unsigned int DenseDimmWitted_Register_Col2(
+		void *, double (*F_COL) (const jl_array_t * const, jl_array_t *), int, int, int);
+
+	unsigned int DenseDimmWitted_Register_C2R2(
+		void *, double (*F_C2R) (const jl_array_t* const p_col, int i_col,
+					const jl_array_t* const p_rows, jl_array_t *), int, int, int);
+
+	double DenseDimmWitted_Exec2(void * p_dw, unsigned int fhandle, int, int, int);
 
 	void DenseDimmWitted_Register_ModelAvg2(
-		void*, unsigned int, void (*F_AVG) (jl_array_t** const p_models, int nreplicas, int ireplica));
+		void*, unsigned int, void (*F_AVG) (jl_array_t** const p_models, int nreplicas, int ireplica), int, int, int);
 
 
 
@@ -51,3 +58,4 @@ extern "C" {
 }
 
 #endif
+

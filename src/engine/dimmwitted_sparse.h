@@ -180,7 +180,7 @@ public:
 		current_handle_id(0),
 		row_pointers((SparseVector<A>*) ::operator new(_n_rows * sizeof(SparseVector<A>))),
 		col_pointers((SparseVector<A>*) ::operator new(_n_cols * sizeof(SparseVector<A>))),
-		c2r_col_2_rowbuffer_idxs(new Pair<long, long>[_n_rows]),
+		c2r_col_2_rowbuffer_idxs(new Pair<long, long>[_n_cols]),
 		row_ids(new long[_n_rows]),
 		col_ids(new long[_n_cols]),
 		dw_row_runner(DWRun<TASK_ROW_SPARSE<A,B>, B, model_repl_type, data_repl_type>(&task_row, p_model, sparse_model_allocator<A,B>)),
@@ -205,7 +205,9 @@ public:
 			task_row.row_pointers = row_pointers;
 			dw_row_runner.prepare();
 
-		}else{
+		}
+
+		if(access_mode == DW_ACCESS_COL || access_mode == DW_ACCESS_C2R){
 			_new_ele_buffer = new A[n_elems];
 			long * colcounts = new long[n_cols];
 			long * colpointers = new long[n_cols];
