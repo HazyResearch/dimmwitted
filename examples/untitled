@@ -1,0 +1,24 @@
+
+double f_lr_grad_c2r(const DenseVector<double>* const p_col, int i_col,
+                     const DenseVector<double>* const p_rows, int n_rows, 
+                     GLMModelExample_SCD* const p_model){
+
+  if(n_rows == 0) return 1.0;
+  if(p_rows[0].n-1 == i_col) return 1.0;
+  double * model = p_model->p;
+  double sum_term = 0.0;
+  double pat_term = 0.0;
+  for(int i_row=0;i_row<n_rows;i_row++){
+    const DenseVector<double> & ex = p_rows[i_row];
+    double label = ex.p[ex.n-1];
+    double dot = 0.0;
+    for(int i=0;i<ex.n-1;i++){
+      dot += ex.p[i] * model[i];
+    }
+    sum_term += label * p_col->p[i_row];
+    pat_term += label * p_col->p[i_row] * exp(label*dot) / (1.0 + exp(dot));
+  }
+  model[i_col] -= 0.00000001 * (-sum_term + pat_term);
+  return 1.0;
+}
+
