@@ -69,6 +69,8 @@ public:
     std::vector<std::future<double>> futures;
 
     int n_sharding = getNumberOfCores();
+    std::cout << "| Running on " << n_sharding << " Cores..." << std::endl;
+
     //int n_sharding = 2;
 
     for(int i_sharding=0;i_sharding<n_sharding;i_sharding++){
