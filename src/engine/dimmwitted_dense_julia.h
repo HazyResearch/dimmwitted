@@ -656,10 +656,10 @@ public:
 			}
 		}
 
-	    //double data_byte = 1.0 * sizeof(double) * n_rows * n_cols;
-	    //double te = t.elapsed();
-	    //double throughput_gb = data_byte / te / 1024 / 1024 / 1024;
-	    //std::cout << "TIME=" << te << " secs" << " THROUGHPUT=" << throughput_gb << " GB/sec." << std::endl;
+	    double data_byte = 1.0 * sizeof(double) * n_rows * n_cols;
+	    double te = t.elapsed();
+	    double throughput_gb = data_byte / te / 1024 / 1024 / 1024;
+	    std::cout << "TIME=" << te << " secs" << " THROUGHPUT=" << throughput_gb << " GB/sec." << std::endl;
 
 		return rs;
 	}
