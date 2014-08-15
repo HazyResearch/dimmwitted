@@ -28,19 +28,29 @@ extern "C" {
 
 	void * DenseDimmWitted_Open2(jl_value_t *data_type, jl_value_t *model_type, \
 								long data_nrows, long data_ncols, long model_nelems, \
-								void * data, void * model, int, int, int);
+								void * data, void * model, int, int, int, 
+								jl_value_t *shared_data_type, int n_shared_data, void * shared_data);
 
 	unsigned int DenseDimmWitted_Register_Row2(
-		void *, double (*F_ROW) (const jl_array_t * const, jl_array_t *), int, int, int);
+		void *, double (*F_ROW) (const jl_array_t * const, jl_array_t *, jl_array_t *), int, int, int);
 
 	unsigned int DenseDimmWitted_Register_Col2(
-		void *, double (*F_COL) (const jl_array_t * const, jl_array_t *), int, int, int);
+		void *, double (*F_COL) (const jl_array_t * const, jl_array_t *, jl_array_t *), int, int, int);
 
 	unsigned int DenseDimmWitted_Register_C2R2(
 		void *, double (*F_C2R) (const jl_array_t* const p_col, int i_col,
-					const jl_array_t* const p_rows, jl_array_t *), int, int, int);
+					const jl_array_t* const p_rows, jl_array_t *, jl_array_t *), int, int, int);
 
 	double DenseDimmWitted_Exec2(void * p_dw, unsigned int fhandle, int, int, int);
+
+	void * SparseDimmWitted_Open2(jl_value_t *data_type, jl_value_t *wrapped_el_type, jl_value_t *model_type, \
+								long data_nrows, long data_ncols, long data_nzelems, long model_nelems, \
+								void * data, long * data_rowval, long * data_colptr, void * model, int, int, int, 
+								jl_value_t *shared_data_type, int n_shared_data, void * shared_data);
+
+
+
+
 
 	void Hello();
 

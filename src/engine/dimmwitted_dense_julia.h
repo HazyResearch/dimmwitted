@@ -29,6 +29,13 @@
 #include "julia.h"
 #include "julia_internal.h"
 
+
+struct SparsePair{
+	long long idx;
+	double data;
+};
+
+
 /**
  * \brief Task description for the row-access method.
  *
@@ -39,10 +46,13 @@ template<class B>
 class TASK_ROW_JULIA{
 public:
 	jl_array_t* row_pointers; /**<A list of pointer to rows*/
-	double (*f) (const jl_array_t* const, B* const);	/**<Row-access function to execute*/
+	jl_array_t * shared_data;
+	double (*f) (const jl_array_t* const, B* const, jl_array_t *);	/**<Row-access function to execute*/
 	TASK_ROW_JULIA(jl_array_t* const _row_pointers, 
-			double (* _f) (const jl_array_t* const p_row, B* const p_model)):
-		row_pointers(_row_pointers), f(_f)
+			double (* _f) (const jl_array_t* const p_row, B* const p_model, jl_array_t *),
+			jl_array_t * _shared_data
+			):
+		row_pointers(_row_pointers), f(_f), shared_data(_shared_data)
 	{}
 	TASK_ROW_JULIA(){}
 };
@@ -56,11 +66,13 @@ public:
 template<class B>
 class TASK_COL_JULIA{
 public:
+	jl_array_t * shared_data;
 	jl_array_t* col_pointers; /**<A list of pointer to columns*/
-	double (*f) (const jl_array_t* const, B* const);	/**<Column-access function to execute*/
+	double (*f) (const jl_array_t* const, B* const, jl_array_t *);	/**<Column-access function to execute*/
 	TASK_COL_JULIA(jl_array_t* const _col_pointers,
-		double (*_f) (const jl_array_t* const, B* const)):
-		col_pointers(_col_pointers), f(_f)
+		double (*_f) (const jl_array_t* const, B* const, jl_array_t *),
+		jl_array_t * _shared_data):
+		col_pointers(_col_pointers), f(_f), shared_data(_shared_data)
 	{}
 	TASK_COL_JULIA(){}
 };
@@ -74,19 +86,21 @@ public:
 template<class B>
 class TASK_C2R_JULIA{
 public:
+	jl_array_t * shared_data;
 	jl_array_t*  col_pointers; /**<A list of pointer to columns*/
 	Pair<long, jl_array_t*> *  c2r_col_2_rowbuffer_idxs; /**<See DenseDimmWitted::c2r_col_2_rowbuffer_idxs*/
 	jl_array_t**  c2r_row_pointers_buffer; /**<See DenseDimmWitted::_c2r_row_pointers_buffer*/
 	double (*f) (const jl_array_t* const p_col, int i_col,
-									const jl_array_t* const p_rows, B* const);
+									const jl_array_t* const p_rows, B* const, jl_array_t *);
 									/**<Column-to-row-access function to execute*/
 
 	TASK_C2R_JULIA(jl_array_t* _col_pointers, Pair<long, jl_array_t*> * _c2r_col_2_rowbuffer_idxs,
 		jl_array_t** _c2r_row_pointers_buffer, 
 		double (*_f) (const jl_array_t* const p_col, int i_col,
-					const jl_array_t* const p_rows, B* const)):
+					const jl_array_t* const p_rows, B* const, jl_array_t *),
+		jl_array_t * _shared_data):
 		col_pointers(_col_pointers), c2r_col_2_rowbuffer_idxs(_c2r_col_2_rowbuffer_idxs),
-		c2r_row_pointers_buffer(_c2r_row_pointers_buffer), f(_f)
+		c2r_row_pointers_buffer(_c2r_row_pointers_buffer), f(_f), shared_data(_shared_data)
 	{}
 
 	TASK_C2R_JULIA(){}
@@ -101,7 +115,7 @@ public:
  */
 template<class B>
 double dense_map_row_JULIA (long i_task, const TASK_ROW_JULIA<B> * const rddata, B * const wrdata){
-	return rddata->f(&rddata->row_pointers[i_task], wrdata);
+	return rddata->f(&rddata->row_pointers[i_task], wrdata, rddata->shared_data);
 }
 
 /**
@@ -112,7 +126,7 @@ double dense_map_row_JULIA (long i_task, const TASK_ROW_JULIA<B> * const rddata,
  */
 template<class B>
 double dense_map_col_JULIA (long i_task, const TASK_COL_JULIA<B> * const rddata, B * const wrdata){
-	return rddata->f(&rddata->col_pointers[i_task], wrdata);
+	return rddata->f(&rddata->col_pointers[i_task], wrdata, rddata->shared_data);
 }
 
 /**
@@ -127,7 +141,7 @@ double dense_map_c2r_JULIA (long i_task, const TASK_C2R_JULIA<B> * const rddata,
 	//std::cout << "###" << row_ptrs.first << "     " << row_ptrs.second << std::endl;
 	//std::cout << "!!!" << (void*) rddata->c2r_col_2_rowbuffer_idxs << std::endl;
 
-	return rddata->f(&rddata->col_pointers[i_task], i_task, row_ptrs.second, wrdata);
+	return rddata->f(&rddata->col_pointers[i_task], i_task, row_ptrs.second, wrdata, rddata->shared_data);
 	return 1.0;
 }
 
@@ -175,14 +189,14 @@ public:
 
 	AccessMode _access_mode;
 
-	typedef double (*DW_FUNCTION_ROW) (const jl_array_t* const, B* const);
+	typedef double (*DW_FUNCTION_ROW) (const jl_array_t* const, B* const, jl_array_t *);
 		/**<\brief Type of row-access function*/
 
-	typedef double (*DW_FUNCTION_COL) (const jl_array_t* const, B* const);
+	typedef double (*DW_FUNCTION_COL) (const jl_array_t* const, B* const, jl_array_t *);
 		/**<\brief Type of column-access function*/
 
 	typedef double (*DW_FUNCTION_C2R) (const jl_array_t* const p_col, int i_col,
-														const jl_array_t* const p_rows, B* const);
+														const jl_array_t* const p_rows, B* const, jl_array_t *);
 		/**<\brief Type of column-to-row-access function*/
 
 	typedef void (*DW_FUNCTION_MAVG) (B** const p_models, int nreplicas, int ireplica);
@@ -193,6 +207,12 @@ public:
 	long n_rows; /**<\brief Number of rows of the data.*/
 
 	long n_cols; /**<\brief Number of columns of the data.*/
+
+	long n_nzelems;
+
+	long * p_rows;
+
+	long * p_cols;
 	
 	B* const p_model; /**<\brief Pointer to the model.*/
 
@@ -250,6 +270,8 @@ public:
                                               the position a, and contain b elements.
                                               */
 
+    char * _sparse_buffer_row;
+
 	char * _new_ele_buffer; /**<\brief If the input is row-wise storage, and the user requires column-wise
                          access, this pointer points to the re-structured region of
                          the memory for column-wise storage*/
@@ -275,6 +297,8 @@ public:
 	DWRun<TASK_C2R_JULIA<B>, B, model_repl_type, data_repl_type> dw_c2r_runner;
 		/**<\brief Execution backend for column-to-row-access. See engine/scheduler.h. */
 
+	jl_array_t * shared_data;
+
 public:
 
 	/**
@@ -286,9 +310,9 @@ public:
 	 * \param _model Pointer to the model.
 	 */
 	DenseDimmWitted_Julia(void * _data, jl_value_t *data_el_type, 
-						  long _n_rows, long _n_cols, B * const _model):
+						  long _n_rows, long _n_cols, B * const _model, jl_array_t * _shared_data):
 		p_data((char*)_data), p_model(_model),
-		n_rows(_n_rows), n_cols(_n_cols),
+		n_rows(_n_rows), n_cols(_n_cols), 
 		current_handle_id(0),
 		row_pointers((jl_array_t*) ::operator new(_n_rows * ((sizeof(jl_array_t)+jl_array_ndimwords(1)*sizeof(size_t)+15)&-16))),
 		col_pointers((jl_array_t*) ::operator new(_n_cols * ((sizeof(jl_array_t)+jl_array_ndimwords(1)*sizeof(size_t)+15)&-16))),
@@ -300,7 +324,8 @@ public:
 		dw_c2r_runner(DWRun<TASK_C2R_JULIA<B>, B, model_repl_type, data_repl_type>(&task_c2r, p_model, dense_model_allocator_JULIA<B>)),
 		_model_repl_type(model_repl_type),
 		_data_repl_type(data_repl_type),
-		_access_mode(access_mode)
+		_access_mode(access_mode),
+		shared_data(_shared_data)
 	{
 		for(int i=0;i<n_rows;i++){
 			row_ids[i] = i;
@@ -312,23 +337,23 @@ public:
 		size_t elsz = jl_datatype_size(data_el_type);
 		if(access_mode == DW_ACCESS_ROW || access_mode == DW_ACCESS_C2R){
 			for(int i=0;i<n_rows;i++){
-				row_pointers[i].type = data_el_type;
-				row_pointers[i].data = (void*) &(p_data[i*elsz*n_cols]);
-				row_pointers[i].length = n_cols;
-				row_pointers[i].elsize = elsz;
-				row_pointers[i].ptrarray = false;
-				row_pointers[i].ndims = 1;
-				row_pointers[i].isshared = 1;
-				row_pointers[i].isaligned = 0;
-				row_pointers[i].how = 0;
-				row_pointers[i].nrows = n_cols;
-				row_pointers[i].maxsize = n_cols;
-				row_pointers[i].offset = 0;
-				//row_pointers[i] = DenseVector<A>(p_data[i], n_cols);
+					row_pointers[i].type = data_el_type;
+					row_pointers[i].data = (void*) &(p_data[i*elsz*n_cols]);
+					row_pointers[i].length = n_cols;
+					row_pointers[i].elsize = elsz;
+					row_pointers[i].ptrarray = false;
+					row_pointers[i].ndims = 1;
+					row_pointers[i].isshared = 1;
+					row_pointers[i].isaligned = 0;
+					row_pointers[i].how = 0;
+					row_pointers[i].nrows = n_cols;
+					row_pointers[i].maxsize = n_cols;
+					row_pointers[i].offset = 0;
+					//row_pointers[i] = DenseVector<A>(p_data[i], n_cols);
 			}
 			task_row.row_pointers = row_pointers;
+			task_row.shared_data = shared_data;
 			dw_row_runner.prepare();
-
 		}
 		if(access_mode == DW_ACCESS_COL || access_mode == DW_ACCESS_C2R){
 			_new_ele_buffer = new char[n_rows*n_cols*elsz];
@@ -352,6 +377,7 @@ public:
 				}
 			}
 			task_col.col_pointers = col_pointers;
+			task_col.shared_data = shared_data;
 			dw_col_runner.prepare();
 
 			if(access_mode == DW_ACCESS_C2R){
@@ -392,10 +418,12 @@ public:
 				}
 
 				task_row.row_pointers = row_pointers;
+				task_row.shared_data = shared_data;
 				dw_row_runner.prepare();
 
 				task_c2r.col_pointers = col_pointers;
 				task_c2r.c2r_col_2_rowbuffer_idxs = c2r_col_2_rowbuffer_idxs;
+				task_row.shared_data = shared_data;
 
 				task_c2r.c2r_row_pointers_buffer = _c2r_row_pointers_buffer;
 				dw_c2r_runner.prepare();
@@ -405,13 +433,136 @@ public:
 		}
 	}
 
+
+	/**
+	 * Note that this is CSC from Julia
+	 */
+	DenseDimmWitted_Julia(void * _data, long * _rows, long * _cols, jl_value_t *data_el_type, 
+							jl_value_t *wrapped_el_type,
+						  long _n_rows, long _n_cols, long _n_nzelems, B * const _model, jl_array_t * _shared_data):
+		p_data((char*)_data), p_model(_model),
+		n_rows(_n_rows), n_cols(_n_cols), n_nzelems(_n_nzelems),
+		p_rows(_rows), p_cols(_cols),
+		current_handle_id(0),
+		row_pointers((jl_array_t*) ::operator new(_n_rows * ((sizeof(jl_array_t)+jl_array_ndimwords(1)*sizeof(size_t)+15)&-16))),
+		col_pointers((jl_array_t*) ::operator new(_n_cols * ((sizeof(jl_array_t)+jl_array_ndimwords(1)*sizeof(size_t)+15)&-16))),
+		c2r_col_2_rowbuffer_idxs(new Pair<long, jl_array_t*>[_n_cols]),
+		row_ids(new long[_n_rows]),
+		col_ids(new long[_n_cols]),
+		dw_row_runner(DWRun<TASK_ROW_JULIA<B>, B, model_repl_type, data_repl_type>(&task_row, p_model, dense_model_allocator_JULIA<B>)),
+		dw_col_runner(DWRun<TASK_COL_JULIA<B>, B, model_repl_type, data_repl_type>(&task_col, p_model, dense_model_allocator_JULIA<B>)),
+		dw_c2r_runner(DWRun<TASK_C2R_JULIA<B>, B, model_repl_type, data_repl_type>(&task_c2r, p_model, dense_model_allocator_JULIA<B>)),
+		_model_repl_type(model_repl_type),
+		_data_repl_type(data_repl_type),
+		_access_mode(access_mode),
+		shared_data(_shared_data)
+	{
+
+		for(int i=0;i<n_rows;i++){
+			row_ids[i] = i;
+		}
+		for(int j=0;j<n_cols;j++){
+			col_ids[j] = j;
+		}
+
+		size_t elsz = jl_datatype_size(data_el_type);
+		size_t wrapper_elsz = jl_datatype_size(wrapped_el_type);
+		if(access_mode == DW_ACCESS_ROW || access_mode == DW_ACCESS_C2R){
+
+			long * rowcounts = new long[n_rows];
+			long * rowpointers = new long[n_rows];
+			long * rowpointers_ori = new long[n_rows];
+			for(int i=0;i<n_rows;i++){
+				rowcounts[i] = 0;
+			}
+			int n = 0;
+			for(int i=0;i<n_cols;i++){
+				if(i==n_cols-1){
+					n = n_nzelems - (p_cols[i]-1);
+				}else{
+					n = p_cols[i+1] - p_cols[i];
+				}
+				for(int j=0;j<n;j++){
+					rowcounts[p_rows[p_cols[i]-1+j]-1] ++;
+				}
+			}
+
+			for(int i=0;i<n_rows;i++){
+				rowpointers[i] = 0;
+			}
+
+			for(int i=1;i<n_rows;i++){
+				rowpointers[i] = rowpointers[i-1] + rowcounts[i-1];
+				rowpointers_ori[i] = rowpointers[i];
+			}
+			rowpointers_ori[0] = rowpointers[0];
+			_sparse_buffer_row = new char[n_nzelems*wrapper_elsz];
+
+			SparsePair * pair;
+			for(int i=0;i<n_cols;i++){
+				if(i==n_cols-1){
+					n = n_nzelems - (p_cols[i]-1);
+				}else{
+					n = p_cols[i+1] - p_cols[i];
+				}
+				//std::cout << "`" << i << "    " << n << std::endl;
+				for(int j=0;j<n;j++){
+					int irow = rowpointers[p_rows[p_cols[i]-1+j]-1];
+					pair = (SparsePair*) &_sparse_buffer_row[irow*wrapper_elsz];
+					pair->idx = i+1;
+					memcpy(&pair->data, &p_data[(p_cols[i]-1+j)*elsz], sizeof(elsz));
+					rowpointers[p_rows[p_cols[i]-1+j]-1] ++;
+					//assert(pair->idx != 0);
+				}
+			}
+
+			/*
+			SparsePair * pair;
+			for(int i=0;i<n_rows;i++){
+				int start = p_rows[i]-1;
+				int end = n_nzelems;
+				if(i!= n_rows-1) end = p_rows[i+1]-1;
+				for(long j=start;j<end;j++){
+					pair = (SparsePair*) &_sparse_buffer_row[j*wrapper_elsz];
+					pair->idx = p_cols[j];
+					memcpy(&pair->data, &p_data[j*elsz], sizeof(elsz));
+				}
+			}*/
+
+			for(int i=0;i<n_rows;i++){
+				row_pointers[i].type = wrapped_el_type;
+				row_pointers[i].data = (void*) &(_sparse_buffer_row[ rowpointers_ori[i]*wrapper_elsz ]);
+				if(i==n_rows - 1){
+					row_pointers[i].length = n_nzelems - rowpointers_ori[i];
+				}else{
+					row_pointers[i].length = rowpointers_ori[i+1] - rowpointers_ori[i];
+				}
+				row_pointers[i].elsize = wrapper_elsz;
+				row_pointers[i].ptrarray = false;
+				row_pointers[i].ndims = 1;
+				row_pointers[i].isshared = 1;
+				row_pointers[i].isaligned = 0;
+				row_pointers[i].how = 0;
+				row_pointers[i].nrows = row_pointers[i].length;
+				row_pointers[i].maxsize = row_pointers[i].length;
+				row_pointers[i].offset = 0;
+				//row_pointers[i] = DenseVector<A>(p_data[i], n_cols);
+			}
+			task_row.row_pointers = row_pointers;
+			task_row.shared_data = shared_data;
+			dw_row_runner.prepare();
+		}
+
+	}
+
+
 	/**
 	 * \brief Register a row-access function.
 	 *
 	 * \return function handle that can used later to call this function.
 	 */
 	unsigned int register_row(
-		double (* f) (const jl_array_t* const p_row, B* const p_model)
+		double (* f) (const jl_array_t* const p_row, B* const p_model, jl_array_t *)
 	){	
 		fs_row[current_handle_id] = f;
 		return current_handle_id ++;
@@ -423,7 +574,7 @@ public:
 	 * \return function handle that can used later to call this function.
 	 */
 	unsigned int register_col(
-		double (* f) (const jl_array_t* const p_col, B* const p_model)
+		double (* f) (const jl_array_t* const p_col, B* const p_model, jl_array_t *)
 	){
 		fs_col[current_handle_id] = f;
 		return current_handle_id ++;
@@ -437,7 +588,7 @@ public:
 	unsigned int register_c2r(
 		double (* f) (const jl_array_t* const p_col, int i_col,
 					const jl_array_t* const p_rows,
-					B* const p_model)
+					B* const p_model, jl_array_t *)
 	){
 		fs_c2r[current_handle_id] = f;
 		return current_handle_id ++;
@@ -505,10 +656,10 @@ public:
 			}
 		}
 
-    double data_byte = 1.0 * sizeof(double) * n_rows * n_cols;
-    double te = t.elapsed();
-    double throughput_gb = data_byte / te / 1024 / 1024 / 1024;
-    std::cout << "TIME=" << te << " secs" << " THROUGHPUT=" << throughput_gb << " GB/sec." << std::endl;
+	    //double data_byte = 1.0 * sizeof(double) * n_rows * n_cols;
+	    //double te = t.elapsed();
+	    //double throughput_gb = data_byte / te / 1024 / 1024 / 1024;
+	    //std::cout << "TIME=" << te << " secs" << " THROUGHPUT=" << throughput_gb << " GB/sec." << std::endl;
 
 		return rs;
 	}

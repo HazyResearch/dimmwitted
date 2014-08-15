@@ -10,7 +10,7 @@ DimmWitted.set_libpath("/Users/czhang/Desktop/Projects/dw_/libdw_julia")
 #    - Modle type is Array{Cdouble}
 #
 nexp = 100000
-nfeat = 10
+nfeat = 1024
 examples = Array(Cdouble, nexp, nfeat+1)
 for row = 1:nexp
 	for col = 1:nfeat
@@ -24,32 +24,50 @@ for row = 1:nexp
 end
 model = Cdouble[0 for i = 1:nfeat]
 
+sparse_example=sparse(examples)
+
 ######################################
 # Define the loss function and gradient
 # function for logistic regression
 #
-function loss(row::Array{Cdouble,1}, model::Array{Cdouble,1})
-	const label = row[length(row)]
+function loss(row, model::Array{Cdouble,1})
 	const nfeat = length(model)
+	const lastcol = nfeat + 1
+	const nnz = length(row)
+	label = 0.0
+	if row[nnz].idx == lastcol
+		label = row[nnz].data
+	end
 	d = 0.0
-	for i = 1:nfeat
-		d = d + row[i]*model[i]
+	for i = 1:nnz
+		if row[i].idx != lastcol
+			d = d + row[i].data*model[row[i].idx]
+		end
 	end
 	return (-label * d + log(exp(d) + 1.0))
 end
 
-function grad(row::Array{Cdouble,1}, model::Array{Cdouble,1})
-	const label = row[length(row)]
+function grad(row, model::Array{Cdouble,1})
 	const nfeat = length(model)
+	const lastcol = nfeat + 1
+	const nnz = length(row)
+	label = 0.0
+	if row[nnz].idx == lastcol
+		label = row[nnz].data
+	end
 	d = 0.0
-	for i = 1:nfeat
-		d = d + row[i]*model[i]
+	for i = 1:nnz
+		if row[i].idx != lastcol
+			d = d + row[i].data*model[row[i].idx]
+		end
 	end
 	d = exp(-d)
-		Z = 0.00001 * (-label + 1.0/(1.0+d))
-  	for i = 1:nfeat
-  		model[i] = model[i] - row[i] * Z
-  	end
+	Z = 0.00001 * (-label + 1.0/(1.0+d))
+	for i = 1:nnz
+		if row[i].idx != lastcol
+		model[row[i].idx] = model[row[i].idx] - row[i].data * Z
+		end
+	end
 	return 1.0
 end
 
@@ -59,8 +77,8 @@ end
 # the type, they are infer'ed by the 
 # open() function, which is parametric.
 #
-dw = DimmWitted.open(examples, model, 
-                DimmWitted.MR_SINGLETHREAD_DEBUG,    
+dw = DimmWitted.open(sparse_example, model, 
+                DimmWitted.MR_PERMACHINE,    
                 DimmWitted.DR_SHARDING,      
                 DimmWitted.AC_ROW)
 
