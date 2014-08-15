@@ -80,7 +80,7 @@ public:
 
     long n_sharding = getNumberOfCores();
     std::cout << "| Running on " << n_sharding << " Cores..." << std::endl;
-    
+
     double rs = 0.0;
     
     for(int i_sharding=0;i_sharding<n_sharding;i_sharding++){
@@ -88,9 +88,9 @@ public:
       long end = ((long)(ntasks/n_sharding)+1) * (i_sharding+1);
       end = end >= ntasks ? ntasks : end;
       if(DATAREPL == DW_DATAREPL_FULL){
-        futures.push_back(std::async(_percore_run_map<RDTYPE, WRTYPE>, p_map, RDPTR, model_replicas[i_sharding], tasks, 0, ntasks));
+        futures.push_back(std::async(std::launch::async, _percore_run_map<RDTYPE, WRTYPE>, p_map, RDPTR, model_replicas[i_sharding], tasks, 0, ntasks));
       }else{
-        futures.push_back(std::async(_percore_run_map<RDTYPE, WRTYPE>, p_map, RDPTR, model_replicas[i_sharding], tasks, start, end));
+        futures.push_back(std::async(std::launch::async, _percore_run_map<RDTYPE, WRTYPE>, p_map, RDPTR, model_replicas[i_sharding], tasks, start, end));
       }
     }
 
@@ -98,6 +98,7 @@ public:
       rs += futures[i].get();
     }
 
+    std::couot << "| Communicating..." << std::endl;
     p_comm(model_replicas, n_sharding, n_sharding);
 
     return rs;

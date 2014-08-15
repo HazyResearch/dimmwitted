@@ -126,9 +126,9 @@ public:
         end = end >= ntasks ? ntasks : end;
         
         if(DATAREPL == DW_DATAREPL_FULL){
-          futures.push_back(std::async(_pernode_run_map<RDTYPE, WRTYPE>, p_map, RDPTR, model_replicas[i_sharding], tasks, 0, ntasks, i_sharding));
+          futures.push_back(std::async(std::launch::async, _pernode_run_map<RDTYPE, WRTYPE>, p_map, RDPTR, model_replicas[i_sharding], tasks, 0, ntasks, i_sharding));
         }else{
-          futures.push_back(std::async(_pernode_run_map<RDTYPE, WRTYPE>, p_map, RDPTR, model_replicas[i_sharding], tasks, start, end, i_sharding));
+          futures.push_back(std::async(std::launch::async, _pernode_run_map<RDTYPE, WRTYPE>, p_map, RDPTR, model_replicas[i_sharding], tasks, start, end, i_sharding));
         }
 
         std::cout << "| Start worker " << i_thread << " on NUMA node " << i_sharding << std::endl;
