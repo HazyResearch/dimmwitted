@@ -99,7 +99,7 @@ public:
     }
 
     std::cout << "| Communicating..." << std::endl;
-    //p_comm(model_replicas, n_sharding, n_sharding);
+    p_comm(model_replicas, n_sharding, n_sharding);
 
     return rs;
   }
