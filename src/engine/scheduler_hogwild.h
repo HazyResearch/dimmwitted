@@ -78,9 +78,9 @@ public:
       long end = ((long)(ntasks/n_sharding)+1) * (i_sharding+1);
       end = end >= ntasks ? ntasks : end;
       if(DATAREPL == DW_DATAREPL_FULL){
-        futures.push_back(std::async(_hogwild_run_map<RDTYPE, WRTYPE>, p_map, RDPTR, WRPTR, tasks, 0, ntasks));
+        futures.push_back(std::async(std::launch::async, _hogwild_run_map<RDTYPE, WRTYPE>, p_map, RDPTR, WRPTR, tasks, 0, ntasks));
       }else{
-        futures.push_back(std::async(_hogwild_run_map<RDTYPE, WRTYPE>, p_map, RDPTR, WRPTR, tasks, start, end));
+        futures.push_back(std::async(std::launch::async, _hogwild_run_map<RDTYPE, WRTYPE>, p_map, RDPTR, WRPTR, tasks, start, end));
       }
     }
 
