@@ -25,6 +25,6 @@ runtest:
 
 julia:
 
-	clang++ -I./src -I./lib/julia/src/ -I./lib/libsupport/ -I./lib/libuv/include/ \
-			-O3 -std=c++11 -stdlib=libc++ -dynamiclib src/helper/julia_helper.cpp \
-			-o libdw_julia.dylib
+	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) -I./src -I./lib/julia/src/ -I./lib/libsupport/ -I./lib/libuv/include/ \
+			-dynamiclib src/helper/julia_helper.cpp -o libdw_julia.dylib
+

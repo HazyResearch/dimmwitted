@@ -29,45 +29,27 @@ model = Cdouble[0 for i = 1:nfeat]
 # function for logistic regression
 #
 function loss(row::Array{Cdouble,1}, model::Array{Cdouble,1})
-	@inbounds begin
-		const label = row[length(row)]
-		const nfeat = length(model)
-		d = 0.0
-		for i = 1:nfeat
-			d = d + row[i]*model[i]
-		end
+	const label = row[length(row)]
+	const nfeat = length(model)
+	d = 0.0
+	for i = 1:nfeat
+		d = d + row[i]*model[i]
 	end
 	return (-label * d + log(exp(d) + 1.0))
 end
 
 function grad(row::Array{Cdouble,1}, model::Array{Cdouble,1})
-	@inbounds begin
-		const label = row[length(row)]
-		const nfeat = length(model)
-		d = 0.0
-		for i = 1:nfeat
-			d = row[i]*model[i]
-		end
-		d = exp(-d)
-  		Z = 0.00001 * (-label + 1.0/(1.0+d))
-	  	for i = 1:nfeat
-	  		model[i] = model[i] - row[i] * Z
-	  	end
-  	end
-	return 1.0
-end
-
-function avg(p_models::Ptr{Array{Cdouble,1}}, nrepl::Cint, irepl::Cint)
-	models = pointer_to_array(p_models, convert(Int64, nrepl+1))
-	julia_irepl = irepl + 1
-	const nfeat = length(models[julia_irepl])
-	for j = 1:nfeat
-		d = 0.0
-		for i = 1:nrepl
-			d = d + models[i][j]
-		end
-		models[julia_irepl][j] = d/nrepl
+	const label = row[length(row)]
+	const nfeat = length(model)
+	d = 0.0
+	for i = 1:nfeat
+		d = d + row[i]*model[i]
 	end
+	d = exp(-d)
+		Z = 0.00001 * (-label + 1.0/(1.0+d))
+  	for i = 1:nfeat
+  		model[i] = model[i] - row[i] * Z
+  	end
 	return 1.0
 end
 
