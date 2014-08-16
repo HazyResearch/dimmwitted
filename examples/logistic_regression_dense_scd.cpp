@@ -119,7 +119,7 @@ double test_glm_dense_scd(){
 
   double sum = 0.0;
   double loss = 0.0;
-  for(int i_epoch=0;i_epoch<10;i_epoch++){
+  for(int i_epoch=0;i_epoch<2;i_epoch++){
     loss = dw.exec(f_handle_loss)/nexp;
     sum = 0.0;
     for(int i=0;i<nfeat;i++){
