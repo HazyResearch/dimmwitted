@@ -114,7 +114,7 @@ double test_glm_sparse_sgd(){
     model.p[i] = 0.0;
   }
 
-  SparseDimmWitted<double, GLMModelExample_Sparse, MODELREPL, DATAREPL, DW_ACCESS_C2R> 
+  SparseDimmWitted<double, GLMModelExample_Sparse, MODELREPL, DATAREPL, DW_ACCESS_ROW> 
     dw(examples, rows, cols, nexp, nfeat+1, nexp*(nfeat+1), &model);
   
   unsigned int f_handle_grad = dw.register_row(f_lr_grad_sparse);
@@ -135,6 +135,18 @@ double test_glm_sparse_sgd(){
   }
 
   return sum;
+}
+
+/**
+ * \brief This is one example of running SGD for logistic regression
+ * in DimmWitted. You can find more examples in test/glm_dense.cc
+ * and test/glm_sparse.cc, and the documented code in 
+ * app/glm_dense_sgd.h
+ */
+int main(int argc, char** argv){
+  double rs = test_glm_sparse_sgd<DW_MODELREPL_PERMACHINE, DW_DATAREPL_SHARDING>();
+  std::cout << "SUM OF MODEL (Should be ~1.3-1.4): " << rs << std::endl;
+  return 0;
 }
 
 #endif
