@@ -116,6 +116,8 @@ public:
     int ct = -1;
     int total = n_numa_nodes * n_thread_per_numa;
 
+    std::cout << "| Running on " << n_sharding << " Nodes with " << n_thread_per_numa << " Cores..." << std::endl;
+
     double rs = 0.0;
 
     for(int i_sharding=0;i_sharding<n_sharding;i_sharding++){
@@ -131,9 +133,9 @@ public:
           futures.push_back(std::async(std::launch::async, _pernode_run_map<RDTYPE, WRTYPE>, p_map, RDPTR, model_replicas[i_sharding], tasks, start, end, i_sharding));
         }
 
-        std::cout << "| Start worker " << i_thread << " on NUMA node " << i_sharding << std::endl;
+        //std::cout << "| Start worker " << i_thread << " on NUMA node " << i_sharding << std::endl;
       }
-      std::cout << "| Start communicator on NUMA node " << i_sharding << std::endl;
+      //std::cout << "| Start communicator on NUMA node " << i_sharding << std::endl;
       comm_threads.push_back(std::thread(_pernode_comm<RDTYPE, WRTYPE>, p_comm, model_replicas[i_sharding], model_replicas, n_sharding, i_sharding));
     
     }

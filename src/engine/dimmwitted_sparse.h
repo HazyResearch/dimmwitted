@@ -327,6 +327,7 @@ public:
 		double rs = 0.0;
 
 		if(access_mode == DW_ACCESS_ROW){
+
 			const DW_FUNCTION_ROW * const f = fs_row.find(f_handle)->second;
 			DW_FUNCTION_MAVG f_avg = NULL;
 			if(fs_avg.find(f_handle) != fs_avg.end()){
