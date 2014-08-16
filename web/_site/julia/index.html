@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>Julia Support</title>
+    <meta name="description" content="">
+
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="canonical" href="http://yourdomain.com/julia/">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">DimmWitted</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+        
+          
+        
+          
+          <a class="page-link" href="/installation/">Installation</a>
+          
+        
+          
+          <a class="page-link" href="/julia/">Julia Support</a>
+          
+        
+          
+        
+          
+          <a class="page-link" href="/cpp/">C++ Support</a>
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Julia Support</h1>
+  </header>
+
+  <article class="post-content">
+    <p>DimmWitted provides a <a href="http://julialang.org/">Julia</a> interface to make it
+easy for you to write DimmWitted application in Julia. In this way,
+you can take advantage of both the high-level language in Julia and
+high-performance backend in DimmWitted at the same time for your
+analytics task. In this tutorial, we will go through (1) how to
+compile the DimmWitted support for Julia using stochastic gradient descent
+(SGD), and (2) how to write a simple application for logistic regression. </p>
+
+<p><strong>See Also…</strong> You probably have more questions about writting Julia applications
+in DimmWitted that is not covered by this tutorial, following is a list of pages 
+that you might also be interested in.</p>
+
+<ol>
+  <li><a href="/julia_scd/">How to write other access methods in Julia for DimmWitted?</a> We will
+  show you an example of writing SCD with a column-to-row access method.</li>
+  <li><a href="/julia_segfault/">I am getting a Segmentation Fault! What should I do?</a> We will show you
+  the set of assumptions that we made on your Julia functions, how to use
+  a simple tool provided by DimmWitted to sanity check these assumptions, and how
+  to use the debugging mode in DimmWitted to diagnose the problem.</li>
+  <li><a href="/julia_immutable/">Can I use non-primative data type, e.g., structure, in my data?</a> Sure, you
+  can, but make sure they are immutable.</li>
+  <li><a href="/julia_global/">Can my gradient function accesses some global variables, e.g., stepsize?</a> Yes, but you need to see this tutorial.</li>
+  <li><a href="/julia_sparse/">Can I use sparse input matrix?</a> Yes, you can.</li>
+  <li><a href="/julia_misc/">Miscellaneous</a>. We will document some tips we found in our experience 
+  that we hope you also found useful.</li>
+  <li><a href="/julia_cheetsheet/">Cheat Sheet</a>. </li>
+</ol>
+
+<p><strong>Pre-requisites…</strong> To understand this tutorial, we assume that you already went through the
+<a href="/installation/">installation guideline</a> and have all test passed.</p>
+
+<h2 id="compile-the-dimmwitted-interface-for-julia">Compile the DimmWitted Interface for Julia</h2>
+
+<p>Recall from our <a href="/installation/">installation guideline</a> that you already checked out
+the code of DimmWitted by</p>
+
+<pre><code>git clone https://github.com/zhangce/dw
+</code></pre>
+
+<p>and lets still assume DW_HOME to be the name of the folder that contains the code (where
+the file <code>Makefile</code> sits). Compiling the DimmWitted Interface for Julia
+contains two steps: (1) check out dependencies, and (2) compile DimmWitted Interface.</p>
+
+<h3 id="dependencies">Dependencies</h3>
+
+<p>We first need to checkout three dependencies, including</p>
+
+<ol>
+  <li><a href="https://github.com/JuliaLang/julia.git">Julia (source code)</a></li>
+  <li><a href="https://github.com/JeffBezanson/libsupport">libsupport</a></li>
+  <li><a href="https://github.com/joyent/libuv">libuv</a></li>
+</ol>
+
+<p>We first go to the lib folder under DW_HOME</p>
+
+<pre><code>cd DW_HOME/lib
+git clone https://github.com/JuliaLang/julia.git
+git clone https://github.com/JeffBezanson/libsupport
+git clone https://github.com/joyent/libuv
+</code></pre>
+
+<h3 id="compile-dimmwitted-interface">Compile DimmWitted Interface</h3>
+
+<p>Now we can compile the DimmWitted interface:</p>
+
+<pre><code>cd DW_HOME
+make julia
+</code></pre>
+
+<p>You should see a new file with the name <code>libdw_julia.dylib</code> in the DW_HOME folder.</p>
+
+<h3 id="validation">Validation</h3>
+
+<p>Let’s do some simple sanity check to make sure compilation is OK. Open your julia
+shell, and first run (Remeber to replace [DW_HOME] with the real path)</p>
+
+<div class="highlight"><pre><code class="language-julia" data-lang="julia"><span class="lineno">1</span> <span class="n">push</span><span class="o">!</span><span class="p">(</span><span class="n">LOAD_PATH</span><span class="p">,</span> <span class="s">&quot;[DW_HOME]/julialib/&quot;</span><span class="p">)</span>
+<span class="lineno">2</span> <span class="k">import</span> <span class="n">DimmWitted</span>
+<span class="lineno">3</span> <span class="n">DimmWitted</span><span class="o">.</span><span class="n">set_libpath</span><span class="p">(</span><span class="s">&quot;[DW_HOME]/libdw_julia&quot;</span><span class="p">)</span></code></pre></div>
+
+<p>These three lines set up the DimmWitted module that you can use to communicate
+with DimmWitted. To validate whether it works or not, type in</p>
+
+<pre><code>DimmWitted.hi()
+</code></pre>
+
+<p>You should see</p>
+
+<pre><code>Hi! -- by DimmWitted
+</code></pre>
+
+<h2 id="writing-a-simple-julia-application">Writing a simple Julia application</h2>
+
+<p>Let’s start writing a logistic regression application in Julia.
+The code can be found <a href="https://github.com/zhangce/dw/blob/master/examples/julia_lr.jl">here</a>
+but we will walkthrough it together.</p>
+
+<p>The first thing you need to do is to create a Julia program,
+let’s say with the name <code>julia_lr.jl</code>. The first
+three lines of the code is the same as the validation
+step</p>
+
+<div class="highlight"><pre><code class="language-julia" data-lang="julia"><span class="lineno">1</span> <span class="n">push</span><span class="o">!</span><span class="p">(</span><span class="n">LOAD_PATH</span><span class="p">,</span> <span class="s">&quot;[DW_HOME]/julialib/&quot;</span><span class="p">)</span>
+<span class="lineno">2</span> <span class="k">import</span> <span class="n">DimmWitted</span>
+<span class="lineno">3</span> <span class="n">DimmWitted</span><span class="o">.</span><span class="n">set_libpath</span><span class="p">(</span><span class="s">&quot;[DW_HOME]/libdw_julia&quot;</span><span class="p">)</span></code></pre></div>
+
+<h4 id="prepare-the-data">Prepare the Data</h4>
+
+<p>We will generate a synthetic data set to play with. The following code
+creates a synthetic classifcation problem with 100000 examples, each of
+which has 10 features and 1 boolean prediction in 0/1.</p>
+
+<div class="highlight"><pre><code class="language-julia" data-lang="julia"><span class="lineno"> 1</span> <span class="n">nexp</span> <span class="o">=</span> <span class="mi">100000</span>
+<span class="lineno"> 2</span> <span class="n">nfeat</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="lineno"> 3</span> <span class="n">examples</span> <span class="o">=</span> <span class="n">Array</span><span class="p">(</span><span class="n">Cdouble</span><span class="p">,</span> <span class="n">nexp</span><span class="p">,</span> <span class="n">nfeat</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+<span class="lineno"> 4</span> <span class="k">for</span> <span class="n">row</span> <span class="o">=</span> <span class="mi">1</span><span class="p">:</span><span class="n">nexp</span>
+<span class="lineno"> 5</span> 	<span class="k">for</span> <span class="n">col</span> <span class="o">=</span> <span class="mi">1</span><span class="p">:</span><span class="n">nfeat</span>
+<span class="lineno"> 6</span> 		<span class="n">examples</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="lineno"> 7</span> 	<span class="k">end</span>
+<span class="lineno"> 8</span> 	<span class="k">if</span> <span class="n">rand</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">0.8</span>
+<span class="lineno"> 9</span> 		<span class="n">examples</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">nfeat</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="lineno">10</span> 	<span class="k">else</span>
+<span class="lineno">11</span> 		<span class="n">examples</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">nfeat</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="lineno">12</span> 	<span class="k">end</span>
+<span class="lineno">13</span> <span class="k">end</span>
+<span class="lineno">14</span> <span class="n">model</span> <span class="o">=</span> <span class="n">Cdouble</span><span class="p">[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">:</span><span class="n">nfeat</span><span class="p">]</span></code></pre></div>
+
+<p>We see that this piece of code creates a two-dimensional
+array <code>examples</code>, each row of which is an example, and
+the first 100 columns are features (all equals to 1 here),
+and the last column is the prediction (80% are 1, 20% are 0).
+We also created a one-dimensional array <code>model</code>, each element
+of which corresponds to the weight for each feature.</p>
+
+<h4 id="define-loss-function-and-gradient-function">Define Loss Function and Gradient Function</h4>
+
+<p>After we specify the data, we can write Julia functions
+to define how to calculate the loss and gradient. Note that,
+in this application, we will use <code>ROW_ACCESS</code> in DimmWitted,
+which means that DimmWitted will call these functions
+for each row with the current state of the model.
+Thesefore, these function have the following signature</p>
+
+<div class="highlight"><pre><code class="language-julia" data-lang="julia"><span class="lineno">1</span> <span class="p">(</span><span class="n">row</span><span class="p">::</span><span class="n">Array</span><span class="p">{</span><span class="n">Cdouble</span><span class="p">,</span><span class="mi">1</span><span class="p">},</span> <span class="n">model</span><span class="p">::</span><span class="n">Array</span><span class="p">{</span><span class="n">Cdouble</span><span class="p">,</span><span class="mi">1</span><span class="p">})</span> <span class="o">-&gt;</span> <span class="n">Cdouble</span></code></pre></div>
+
+<p>where <code>row</code> and <code>model</code> are the row and the current state
+of the model, respectively.</p>
+
+<blockquote>
+  <blockquote>
+    <p><strong>Where does the ‘‘Cdouble’’ for ‘‘Array{Cdouble,1}’’ in the 
+function signature comes from?</strong>
+When you define the data structure <code>examples</code> and <code>models</code>,
+they are of the type Array{Cdouble,2} and Array{Cdouble,1}. DimmWitted
+will get their types automatically. You can also use other
+primitive types (e.g., Cint) or composite types (<a href="julia_immutable">See here</a>)–
+just to make sure you change the signature of the function accordingly.</p>
+  </blockquote>
+</blockquote>
+
+<p>Let’s now define the loss function with this signature.</p>
+
+<div class="highlight"><pre><code class="language-julia" data-lang="julia"><span class="lineno">1</span> <span class="k">function</span><span class="nf"> loss</span><span class="p">(</span><span class="n">row</span><span class="p">::</span><span class="n">Array</span><span class="p">{</span><span class="n">Cdouble</span><span class="p">,</span><span class="mi">1</span><span class="p">},</span> <span class="n">model</span><span class="p">::</span><span class="n">Array</span><span class="p">{</span><span class="n">Cdouble</span><span class="p">,</span><span class="mi">1</span><span class="p">})</span>
+<span class="lineno">2</span> 	<span class="kd">const</span> <span class="n">label</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="n">length</span><span class="p">(</span><span class="n">row</span><span class="p">)]</span>
+<span class="lineno">3</span> 	<span class="kd">const</span> <span class="n">nfeat</span> <span class="o">=</span> <span class="n">length</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="lineno">4</span> 	<span class="n">d</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="lineno">5</span> 	<span class="k">for</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">:</span><span class="n">nfeat</span>
+<span class="lineno">6</span> 		<span class="n">d</span> <span class="o">=</span> <span class="n">d</span> <span class="o">+</span> <span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">model</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+<span class="lineno">7</span> 	<span class="k">end</span>
+<span class="lineno">8</span> 	<span class="k">return</span> <span class="p">(</span><span class="o">-</span><span class="n">label</span> <span class="o">*</span> <span class="n">d</span> <span class="o">+</span> <span class="n">log</span><span class="p">(</span><span class="n">exp</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">))</span>
+<span class="lineno">9</span> <span class="k">end</span></code></pre></div>
+
+<p>We can see that this function contains three components:</p>
+
+<ol>
+  <li>Line 2-3: We get the label for the given row by picking the
+  last element in the <code>row</code>, and the total number of features
+  by the length of the <code>model</code>.</li>
+  <li>Line 4-7: Calculate the dot product and store it in the variable
+  <code>d</code>.</li>
+  <li>Line 8: Calculate the loss for each row and returns it.</li>
+</ol>
+
+<p>Similary, we can write the gradient function</p>
+
+<div class="highlight"><pre><code class="language-julia" data-lang="julia"><span class="lineno"> 1</span> <span class="k">function</span><span class="nf"> grad</span><span class="p">(</span><span class="n">row</span><span class="p">::</span><span class="n">Array</span><span class="p">{</span><span class="n">Cdouble</span><span class="p">,</span><span class="mi">1</span><span class="p">},</span> <span class="n">model</span><span class="p">::</span><span class="n">Array</span><span class="p">{</span><span class="n">Cdouble</span><span class="p">,</span><span class="mi">1</span><span class="p">})</span>
+<span class="lineno"> 2</span> 	<span class="kd">const</span> <span class="n">label</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="n">length</span><span class="p">(</span><span class="n">row</span><span class="p">)]</span>
+<span class="lineno"> 3</span> 	<span class="kd">const</span> <span class="n">nfeat</span> <span class="o">=</span> <span class="n">length</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="lineno"> 4</span> 	<span class="n">d</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="lineno"> 5</span> 	<span class="k">for</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">:</span><span class="n">nfeat</span>
+<span class="lineno"> 6</span> 		<span class="n">d</span> <span class="o">=</span> <span class="n">d</span> <span class="o">+</span> <span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">model</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+<span class="lineno"> 7</span> 	<span class="k">end</span>
+<span class="lineno"> 8</span> 	<span class="n">d</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">d</span><span class="p">)</span>
+<span class="lineno"> 9</span> 		<span class="n">Z</span> <span class="o">=</span> <span class="mf">0.00001</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="n">label</span> <span class="o">+</span> <span class="mf">1.0</span><span class="o">/</span><span class="p">(</span><span class="mf">1.0</span><span class="o">+</span><span class="n">d</span><span class="p">))</span>
+<span class="lineno">10</span>   	<span class="k">for</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">:</span><span class="n">nfeat</span>
+<span class="lineno">11</span>   		<span class="n">model</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">Z</span>
+<span class="lineno">12</span>   	<span class="k">end</span>
+<span class="lineno">13</span> 	<span class="k">return</span> <span class="mf">1.0</span>
+<span class="lineno">14</span> <span class="k">end</span></code></pre></div>
+
+<p>We can see that this <code>grad</code> function is similar to <code>loss</code>, with the
+difference that in Line 10-12, we update the model.</p>
+
+<h4 id="run">Run!</h4>
+
+<p>We will now create a DimmWitted object to training our logistic
+regressor defined by the function <code>grad</code> and <code>loss</code> on the data
+<code>examples</code> and <code>models</code>. We first create an object with
+the specification of the data and how we want to access the data:</p>
+
+<div class="highlight"><pre><code class="language-julia" data-lang="julia"><span class="lineno">1</span> <span class="n">dw</span> <span class="o">=</span> <span class="n">DimmWitted</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">examples</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> 
+<span class="lineno">2</span>                 <span class="n">DimmWitted</span><span class="o">.</span><span class="n">MR_SINGLETHREAD_DEBUG</span><span class="p">,</span>    
+<span class="lineno">3</span>                 <span class="n">DimmWitted</span><span class="o">.</span><span class="n">DR_SHARDING</span><span class="p">,</span>      
+<span class="lineno">4</span>                 <span class="n">DimmWitted</span><span class="o">.</span><span class="n">AC_ROW</span><span class="p">)</span></code></pre></div>
+
+<p>This command creates a DimmWitted object <code>dw</code> by using
+the <code>open()</code> function. Line 1 specifies the data and model,
+and line 2-4 specifies how the model will be accessed, here</p>
+
+<ul>
+  <li>DimmWitted.MR_SINGLETHREAD_DEBUG means that we will
+  have one model replica and one thread processing this model.
+  (This is slow, but we will show how to make that faster
+  in a minute!)</li>
+  <li>DimmWitted.DR_SHARDING means that each thread will
+  process a partition of the data instead of the whole data set.</li>
+  <li>DimmWitted.AC_ROW means that we are going to access
+  the data (<code>example</code>) in a row-wise way.</li>
+</ul>
+
+<p>If this function runs correctly, you should see the following output (Note 
+that the address @0x00000001067957a0 might vary for each run–it is the
+address of the DimmWitted object created in C++):</p>
+
+<pre><code>[JULIA-DW] Created DimmWitted Object: Ptr{Void} @0x00000001067957a0
+</code></pre>
+
+<p>For a complete list of these parameters, see <a href="/julia_cheatsheet/">Cheat Sheet</a>.</p>
+
+<p>After we create this <code>dw</code> object, we need to let it know
+about the two functions, i.e., <code>loss</code> and <code>grad</code>, that we
+defined. We can do it by</p>
+
+<div class="highlight"><pre><code class="language-julia" data-lang="julia"><span class="lineno">1</span> <span class="n">handle_loss</span> <span class="o">=</span> <span class="n">DimmWitted</span><span class="o">.</span><span class="n">register_row</span><span class="p">(</span><span class="n">dw</span><span class="p">,</span> <span class="n">loss</span><span class="p">)</span>
+<span class="lineno">2</span> <span class="n">handle_grad</span> <span class="o">=</span> <span class="n">DimmWitted</span><span class="o">.</span><span class="n">register_row</span><span class="p">(</span><span class="n">dw</span><span class="p">,</span> <span class="n">grad</span><span class="p">)</span></code></pre></div>
+
+<p>Each function call will register the function to DimmWitted
+and returns a handle that can be used later. Here, because
+both <code>loss</code> and <code>grad</code> are row-access functions, we
+use <code>register_row</code> here. (See <a href="/julia_cheatsheet/">Cheat Sheet</a>
+if you want to register other types of functions.) If these
+run successfully, you should see in the output:</p>
+
+<pre><code>[JULIA-DW] Registered Row Function loss Handle=0
+[JULIA-DW] Registered Row Function grad Handle=1
+</code></pre>
+
+<p>Now lets run a function! Lets first see what is the loss
+we can get given the model that we initialized with all zeros:</p>
+
+<div class="highlight"><pre><code class="language-julia" data-lang="julia"><span class="lineno">1</span> <span class="n">rs</span> <span class="o">=</span> <span class="n">DimmWitted</span><span class="o">.</span><span class="n">exec</span><span class="p">(</span><span class="n">dw</span><span class="p">,</span> <span class="n">handle_loss</span><span class="p">)</span>
+<span class="lineno">2</span> <span class="n">println</span><span class="p">(</span><span class="s">&quot;LOSS: &quot;</span><span class="p">,</span> <span class="n">rs</span><span class="o">/</span><span class="n">nexp</span><span class="p">)</span></code></pre></div>
+
+<p>You should see in the output</p>
+
+<pre><code>LOSS: 0.6931471805587225
+</code></pre>
+
+<p>We can then run a gradient step:</p>
+
+<div class="highlight"><pre><code class="language-julia" data-lang="julia"><span class="lineno">1</span> <span class="n">rs</span> <span class="o">=</span> <span class="n">DimmWitted</span><span class="o">.</span><span class="n">exec</span><span class="p">(</span><span class="n">dw</span><span class="p">,</span> <span class="n">handle_grad</span><span class="p">)</span></code></pre></div>
+
+<p>Lets re-calculate the loss, and this time we will
+get</p>
+
+<pre><code>LOSS: 0.5029576555246331
+</code></pre>
+
+<p>We see that it gets smaller! </p>
+
+<p>Now we can run ten iterations:</p>
+
+<div class="highlight"><pre><code class="language-julia" data-lang="julia"><span class="lineno">1</span> <span class="k">for</span> <span class="n">iepoch</span> <span class="o">=</span> <span class="mi">1</span><span class="p">:</span><span class="mi">10</span>
+<span class="lineno">2</span> 	<span class="n">rs</span> <span class="o">=</span> <span class="n">DimmWitted</span><span class="o">.</span><span class="n">exec</span><span class="p">(</span><span class="n">dw</span><span class="p">,</span> <span class="n">handle_loss</span><span class="p">)</span>
+<span class="lineno">3</span> 	<span class="n">println</span><span class="p">(</span><span class="s">&quot;LOSS: &quot;</span><span class="p">,</span> <span class="n">rs</span><span class="o">/</span><span class="n">nexp</span><span class="p">)</span>
+<span class="lineno">4</span> 	<span class="n">rs</span> <span class="o">=</span> <span class="n">DimmWitted</span><span class="o">.</span><span class="n">exec</span><span class="p">(</span><span class="n">dw</span><span class="p">,</span> <span class="n">handle_grad</span><span class="p">)</span>
+<span class="lineno">5</span> <span class="k">end</span></code></pre></div>
+
+<p>and get the final loss</p>
+
+<pre><code>LOSS: 0.5029576555246331
+</code></pre>
+
+<h4 id="use-all-the-cores">Use All the Cores!</h4>
+
+<p>Now we have built a simple logsitic regression model,
+but we can make it better because currently it only uses
+a single thread. One advantage of DimmWitted is
+to run statistial analytics workload efficenlty in
+main memory by taking advantage of massive parallelism.</p>
+
+<p>To speed-up our toy example, we only need to do one single
+twist</p>
+
+<div class="highlight"><pre><code class="language-julia" data-lang="julia"><span class="lineno">1</span> <span class="n">dw</span> <span class="o">=</span> <span class="n">DimmWitted</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">examples</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> 
+<span class="lineno">2</span>                 <span class="n">DimmWitted</span><span class="o">.</span><span class="n">MR_PERMACHINE</span><span class="p">,</span>    
+<span class="lineno">3</span>                 <span class="n">DimmWitted</span><span class="o">.</span><span class="n">DR_SHARDING</span><span class="p">,</span>      
+<span class="lineno">4</span>                 <span class="n">DimmWitted</span><span class="o">.</span><span class="n">AC_ROW</span><span class="p">)</span></code></pre></div>
+
+<p>If we compare the Line 2, we can see that we are using
+a different strategy called <code>DimmWitted.MR_PERMACHINE</code>,
+which will maintain a single model in main memory and
+use all possible threads to update it in a lock-free
+way. This approach is also known as Hogwild!</p>
+
+<p>After making this changes, you can then register the
+function, and run ten iterations of the gradient step.</p>
+
+
+  </article>
+
+</div>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">DimmWitted</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col  footer-col-1">
+        <ul class="contact-list">
+          <li>DimmWitted</li>
+          <li><a href="mailto:contact.hazy@gmail.com">contact.hazy@gmail.com</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col  footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+            <a href="https://github.com/HazyResearch">
+              <span class="icon  icon--github">
+                <svg viewBox="0 0 16 16">
+                  <path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/>
+                </svg>
+              </span>
+
+              <span class="username">HazyResearch</span>
+            </a>
+          </li>
+          
+
+          
+          <li>
+            <a href="https://twitter.com/HazyResearch">
+              <span class="icon  icon--twitter">
+                <svg viewBox="0 0 16 16">
+                  <path fill="#828282" d="M15.969,3.058c-0.586,0.26-1.217,0.436-1.878,0.515c0.675-0.405,1.194-1.045,1.438-1.809
+                  c-0.632,0.375-1.332,0.647-2.076,0.793c-0.596-0.636-1.446-1.033-2.387-1.033c-1.806,0-3.27,1.464-3.27,3.27 c0,0.256,0.029,0.506,0.085,0.745C5.163,5.404,2.753,4.102,1.14,2.124C0.859,2.607,0.698,3.168,0.698,3.767 c0,1.134,0.577,2.135,1.455,2.722C1.616,6.472,1.112,6.325,0.671,6.08c0,0.014,0,0.027,0,0.041c0,1.584,1.127,2.906,2.623,3.206 C3.02,9.402,2.731,9.442,2.433,9.442c-0.211,0-0.416-0.021-0.615-0.059c0.416,1.299,1.624,2.245,3.055,2.271 c-1.119,0.877-2.529,1.4-4.061,1.4c-0.264,0-0.524-0.015-0.78-0.046c1.447,0.928,3.166,1.469,5.013,1.469 c6.015,0,9.304-4.983,9.304-9.304c0-0.142-0.003-0.283-0.009-0.423C14.976,4.29,15.531,3.714,15.969,3.058z"/>
+                </svg>
+              </span>
+
+              <span class="username">HazyResearch</span>
+            </a>
+          </li>
+          
+        </ul>
+      </div>
+
+      <div class="footer-col  footer-col-3">
+        <p class="text"></p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>
