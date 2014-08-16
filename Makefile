@@ -29,6 +29,9 @@ endif
 exp:
 	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) examples/logistic_regression_dense_sgd.cpp -o example
 
+dep:
+	cd ./lib/numactl-2.0.9; CXX=$(CXX) make; cd ../..
+
 test_dep:
 
 	$(CXX) -O3 -I./lib/gtest-1.7.0/include/ -I./lib/gtest-1.7.0/ -c ./lib/gtest-1.7.0/src/gtest_main.cc
