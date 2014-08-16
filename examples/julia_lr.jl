@@ -60,7 +60,7 @@ end
 # open() function, which is parametric.
 #
 dw = DimmWitted.open(examples, model, 
-                DimmWitted.MR_SINGLETHREAD_DEBUG,    
+                DimmWitted.MR_PERMACHINE,    
                 DimmWitted.DR_SHARDING,      
                 DimmWitted.AC_ROW)
 
