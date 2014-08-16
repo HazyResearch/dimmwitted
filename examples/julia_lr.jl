@@ -10,7 +10,7 @@ DimmWitted.set_libpath("/Users/czhang/Desktop/Projects/dw_/libdw_julia")
 #    - Modle type is Array{Cdouble}
 #
 nexp = 100000
-nfeat = 10
+nfeat = 1024
 examples = Array(Cdouble, nexp, nfeat+1)
 for row = 1:nexp
 	for col = 1:nfeat
