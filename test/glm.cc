@@ -16,89 +16,90 @@ limitations under the License.
 
 #include <limits.h>
 #include "gtest/gtest.h"
-#include "app/glm_dense_sgd.h"
-#include "app/glm_sparse_sgd.h"
+#include "logistic_regression_dense_scd.cpp"
+#include "logistic_regression_dense_sgd.cpp"
+#include "logistic_regression_sparse_sgd.cpp"
 
 TEST(GLMTEST_DENSE_SGD, DENSE_PERCORE_DATAFULL) {
 	double rs;
-  rs = test_glm_dense_sgd<DW_PERCORE, DW_FULL>();
+  rs = test_glm_dense_sgd<DW_MODELREPL_PERCORE, DW_DATAREPL_FULL>();
   EXPECT_GT(rs, 1.0);
   EXPECT_LT(rs, 2.0);
 }
 
 TEST(GLMTEST_DENSE_SGD, DENSE_PERNODE_DATAFULL) {
 	double rs;
-  rs = test_glm_dense_sgd<DW_PERNODE, DW_FULL>();
+  rs = test_glm_dense_sgd<DW_MODELREPL_PERNODE, DW_DATAREPL_FULL>();
   EXPECT_GT(rs, 1.0);
   EXPECT_LT(rs, 2.0);
 }
 
 TEST(GLMTEST_DENSE_SGD, DENSE_HOGWILD_DATAFULL) {
 	double rs;
-  rs = test_glm_dense_sgd<DW_HOGWILD, DW_FULL>();
+  rs = test_glm_dense_sgd<DW_MODELREPL_PERMACHINE, DW_DATAREPL_FULL>();
   EXPECT_GT(rs, 1.0);
   EXPECT_LT(rs, 2.0);
 }
 
 TEST(GLMTEST_DENSE_SGD, DENSE_PERCORE_SHARDING) {
 	double rs;
-  rs = test_glm_dense_sgd<DW_PERCORE, DW_SHARDING>();
+  rs = test_glm_dense_sgd<DW_MODELREPL_PERCORE, DW_DATAREPL_SHARDING>();
   EXPECT_GT(rs, 1.0);
   EXPECT_LT(rs, 2.0);
 }
 
 TEST(GLMTEST_DENSE_SGD, DENSE_PERNODE_SHARDING) {
 	double rs;
-  rs = test_glm_dense_sgd<DW_PERNODE, DW_SHARDING>();
+  rs = test_glm_dense_sgd<DW_MODELREPL_PERNODE, DW_DATAREPL_SHARDING>();
   EXPECT_GT(rs, 1.0);
   EXPECT_LT(rs, 2.0);
 }
 
 TEST(GLMTEST_DENSE_SGD, DENSE_HOGWILD_SHARDING) {
 	double rs;
-  rs = test_glm_dense_sgd<DW_HOGWILD, DW_SHARDING>();
+  rs = test_glm_dense_sgd<DW_MODELREPL_PERMACHINE, DW_DATAREPL_SHARDING>();
   EXPECT_GT(rs, 1.0);
   EXPECT_LT(rs, 2.0);
 }
 
 TEST(GLMTEST_SPARSE_SGD, SPARSE_PERCORE_DATAFULL) {
   double rs;
-  rs = test_glm_sparse_sgd<DW_PERCORE, DW_FULL>();
+  rs = test_glm_sparse_sgd<DW_MODELREPL_PERCORE, DW_DATAREPL_FULL>();
   EXPECT_GT(rs, 1.0);
   EXPECT_LT(rs, 2.0);
 }
 
 TEST(GLMTEST_SPARSE_SGD, SPARSE_PERNODE_DATAFULL) {
   double rs;
-  rs = test_glm_sparse_sgd<DW_PERNODE, DW_FULL>();
+  rs = test_glm_sparse_sgd<DW_MODELREPL_PERNODE, DW_DATAREPL_FULL>();
   EXPECT_GT(rs, 1.0);
   EXPECT_LT(rs, 2.0);
 }
 
 TEST(GLMTEST_SPARSE_SGD, SPARSE_HOGWILD_DATAFULL) {
   double rs;
-  rs = test_glm_sparse_sgd<DW_HOGWILD, DW_FULL>();
+  rs = test_glm_sparse_sgd<DW_MODELREPL_PERMACHINE, DW_DATAREPL_FULL>();
   EXPECT_GT(rs, 1.0);
   EXPECT_LT(rs, 2.0);
 }
 
 TEST(GLMTEST_SPARSE_SGD, SPARSE_PERCORE_SHARDING) {
   double rs;
-  rs = test_glm_sparse_sgd<DW_PERCORE, DW_SHARDING>();
+  rs = test_glm_sparse_sgd<DW_MODELREPL_PERCORE, DW_DATAREPL_SHARDING>();
   EXPECT_GT(rs, 1.0);
   EXPECT_LT(rs, 2.0);
 }
 
 TEST(GLMTEST_SPARSE_SGD, SPARSE_PERNODE_SHARDING) {
   double rs;
-  rs = test_glm_sparse_sgd<DW_PERNODE, DW_SHARDING>();
+  rs = test_glm_sparse_sgd<DW_MODELREPL_PERNODE, DW_DATAREPL_SHARDING>();
   EXPECT_GT(rs, 1.0);
   EXPECT_LT(rs, 2.0);
 }
 
 TEST(GLMTEST_SPARSE_SGD, SPARSE_HOGWILD_SHARDING) {
   double rs;
-  rs = test_glm_sparse_sgd<DW_HOGWILD, DW_SHARDING>();
+  rs = test_glm_sparse_sgd<DW_MODELREPL_PERMACHINE, DW_DATAREPL_SHARDING>();
   EXPECT_GT(rs, 1.0);
   EXPECT_LT(rs, 2.0);
 }

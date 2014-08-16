@@ -143,11 +143,11 @@ double test_glm_sparse_sgd(){
  * and test/glm_sparse.cc, and the documented code in 
  * app/glm_dense_sgd.h
  */
-int main(int argc, char** argv){
-  double rs = test_glm_sparse_sgd<DW_MODELREPL_PERCORE, DW_DATAREPL_SHARDING>();
-  std::cout << "SUM OF MODEL (Should be ~1.3-1.4): " << rs << std::endl;
-  return 0;
-}
+//int main(int argc, char** argv){
+//  double rs = test_glm_sparse_sgd<DW_MODELREPL_PERCORE, DW_DATAREPL_SHARDING>();
+//  std::cout << "SUM OF MODEL (Should be ~1.3-1.4): " << rs << std::endl;
+//  return 0;
+//}
 
 #endif
 
