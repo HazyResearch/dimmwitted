@@ -46,7 +46,7 @@ runtest:
 
 	$(CXX) $(CPP_FLAG) gtest_main.o  glm.o gtest-all.o -o run_test $(CPP_LAST)
 
-	./run_test
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):./lib/numactl-2.0.9 ./run_test
 
 julia:
 
