@@ -411,6 +411,264 @@ void * DenseDimmWitted_Open2(jl_value_t *data_type, jl_value_t *model_type,     
 }
 
 
+void set_n_thread_per_node(void * p_dw, int n_thread_per_node, int model_repl_type, int data_repl_type, int data_access){
+	if(model_repl_type == DW_MODELREPL_PERMACHINE){
+		if(data_repl_type == DW_DATAREPL_SHARDING){
+			if(data_access == DW_ACCESS_ROW){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERMACHINE, DW_DATAREPL_SHARDING, DW_ACCESS_ROW> T;
+				return ((T*) p_dw)->set_n_thread_per_node(n_thread_per_node);
+			}else if(data_access == DW_ACCESS_COL){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERMACHINE, DW_DATAREPL_SHARDING, DW_ACCESS_COL> T;
+				return ((T*) p_dw)->set_n_thread_per_node(n_thread_per_node);
+			}else if(data_access == DW_ACCESS_C2R){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERMACHINE, DW_DATAREPL_SHARDING, DW_ACCESS_C2R> T;
+				return ((T*) p_dw)->set_n_thread_per_node(n_thread_per_node);
+			}else{
+				assert(false);
+			}
+		}else if (data_repl_type == DW_DATAREPL_FULL){
+			if(data_access == DW_ACCESS_ROW){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERMACHINE, DW_DATAREPL_FULL, DW_ACCESS_ROW> T;
+				return ((T*) p_dw)->set_n_thread_per_node(n_thread_per_node);
+			}else if(data_access == DW_ACCESS_COL){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERMACHINE, DW_DATAREPL_FULL, DW_ACCESS_COL> T;
+				return ((T*) p_dw)->set_n_thread_per_node(n_thread_per_node);
+			}else if(data_access == DW_ACCESS_C2R){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERMACHINE, DW_DATAREPL_FULL, DW_ACCESS_C2R> T;
+				return ((T*) p_dw)->set_n_thread_per_node(n_thread_per_node);
+			}else{
+				assert(false);
+			}
+		}else{
+			assert(false);
+		}
+	}else if(model_repl_type == DW_MODELREPL_PERCORE){
+		if(data_repl_type == DW_DATAREPL_SHARDING){
+			if(data_access == DW_ACCESS_ROW){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERCORE, DW_DATAREPL_SHARDING, DW_ACCESS_ROW> T;
+				return ((T*) p_dw)->set_n_thread_per_node(n_thread_per_node);
+			}else if(data_access == DW_ACCESS_COL){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERCORE, DW_DATAREPL_SHARDING, DW_ACCESS_COL> T;
+				return ((T*) p_dw)->set_n_thread_per_node(n_thread_per_node);
+			}else if(data_access == DW_ACCESS_C2R){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERCORE, DW_DATAREPL_SHARDING, DW_ACCESS_C2R> T;
+				return ((T*) p_dw)->set_n_thread_per_node(n_thread_per_node);
+			}else{
+				assert(false);
+			}
+		}else if (data_repl_type == DW_DATAREPL_FULL){
+			if(data_access == DW_ACCESS_ROW){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERCORE, DW_DATAREPL_FULL, DW_ACCESS_ROW> T;
+				return ((T*) p_dw)->set_n_thread_per_node(n_thread_per_node);
+			}else if(data_access == DW_ACCESS_COL){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERCORE, DW_DATAREPL_FULL, DW_ACCESS_COL> T;
+				return ((T*) p_dw)->set_n_thread_per_node(n_thread_per_node);
+			}else if(data_access == DW_ACCESS_C2R){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERCORE, DW_DATAREPL_FULL, DW_ACCESS_C2R> T;
+				return ((T*) p_dw)->set_n_thread_per_node(n_thread_per_node);
+			}else{
+				assert(false);
+			}
+		}else{
+			assert(false);
+		}
+	}else if(model_repl_type == DW_MODELREPL_PERNODE){
+		if(data_repl_type == DW_DATAREPL_SHARDING){
+			if(data_access == DW_ACCESS_ROW){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERNODE, DW_DATAREPL_SHARDING, DW_ACCESS_ROW> T;
+				return ((T*) p_dw)->set_n_thread_per_node(n_thread_per_node);
+			}else if(data_access == DW_ACCESS_COL){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERNODE, DW_DATAREPL_SHARDING, DW_ACCESS_COL> T;
+				return ((T*) p_dw)->set_n_thread_per_node(n_thread_per_node);
+			}else if(data_access == DW_ACCESS_C2R){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERNODE, DW_DATAREPL_SHARDING, DW_ACCESS_C2R> T;
+				return ((T*) p_dw)->set_n_thread_per_node(n_thread_per_node);
+			}else{
+				assert(false);
+			}
+		}else if (data_repl_type == DW_DATAREPL_FULL){
+			if(data_access == DW_ACCESS_ROW){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERNODE, DW_DATAREPL_FULL, DW_ACCESS_ROW> T;
+				return ((T*) p_dw)->set_n_thread_per_node(n_thread_per_node);
+			}else if(data_access == DW_ACCESS_COL){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERNODE, DW_DATAREPL_FULL, DW_ACCESS_COL> T;
+				return ((T*) p_dw)->set_n_thread_per_node(n_thread_per_node);
+			}else if(data_access == DW_ACCESS_C2R){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERNODE, DW_DATAREPL_FULL, DW_ACCESS_C2R> T;
+				return ((T*) p_dw)->set_n_thread_per_node(n_thread_per_node);
+			}else{
+				assert(false);
+			}
+		}else{
+			assert(false);
+		}
+	}else if(model_repl_type == DW_MODELREPL_SINGLETHREAD_DEBUG){
+		if(data_repl_type == DW_DATAREPL_SHARDING){
+			if(data_access == DW_ACCESS_ROW){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_SINGLETHREAD_DEBUG, DW_DATAREPL_SHARDING, DW_ACCESS_ROW> T;
+				return ((T*) p_dw)->set_n_thread_per_node(n_thread_per_node);
+			}else if(data_access == DW_ACCESS_COL){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_SINGLETHREAD_DEBUG, DW_DATAREPL_SHARDING, DW_ACCESS_COL> T;
+				return ((T*) p_dw)->set_n_thread_per_node(n_thread_per_node);
+			}else if(data_access == DW_ACCESS_C2R){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_SINGLETHREAD_DEBUG, DW_DATAREPL_SHARDING, DW_ACCESS_C2R> T;
+				return ((T*) p_dw)->set_n_thread_per_node(n_thread_per_node);
+			}else{
+				assert(false);
+			}
+		}else if (data_repl_type == DW_DATAREPL_FULL){
+			if(data_access == DW_ACCESS_ROW){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_SINGLETHREAD_DEBUG, DW_DATAREPL_FULL, DW_ACCESS_ROW> T;
+				return ((T*) p_dw)->set_n_thread_per_node(n_thread_per_node);
+			}else if(data_access == DW_ACCESS_COL){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_SINGLETHREAD_DEBUG, DW_DATAREPL_FULL, DW_ACCESS_COL> T;
+				return ((T*) p_dw)->set_n_thread_per_node(n_thread_per_node);
+			}else if(data_access == DW_ACCESS_C2R){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_SINGLETHREAD_DEBUG, DW_DATAREPL_FULL, DW_ACCESS_C2R> T;
+				return ((T*) p_dw)->set_n_thread_per_node(n_thread_per_node);
+			}else{
+				assert(false);
+			}
+		}else{
+			assert(false);
+		}
+	}else{
+		assert(false);
+	}
+	//assert(false);
+	//return -1;
+}
+
+void set_n_numa_node(void * p_dw, int n_numa_node, int model_repl_type, int data_repl_type, int data_access){
+	if(model_repl_type == DW_MODELREPL_PERMACHINE){
+		if(data_repl_type == DW_DATAREPL_SHARDING){
+			if(data_access == DW_ACCESS_ROW){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERMACHINE, DW_DATAREPL_SHARDING, DW_ACCESS_ROW> T;
+				return ((T*) p_dw)->set_n_numa_node(n_numa_node);
+			}else if(data_access == DW_ACCESS_COL){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERMACHINE, DW_DATAREPL_SHARDING, DW_ACCESS_COL> T;
+				return ((T*) p_dw)->set_n_numa_node(n_numa_node);
+			}else if(data_access == DW_ACCESS_C2R){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERMACHINE, DW_DATAREPL_SHARDING, DW_ACCESS_C2R> T;
+				return ((T*) p_dw)->set_n_numa_node(n_numa_node);
+			}else{
+				assert(false);
+			}
+		}else if (data_repl_type == DW_DATAREPL_FULL){
+			if(data_access == DW_ACCESS_ROW){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERMACHINE, DW_DATAREPL_FULL, DW_ACCESS_ROW> T;
+				return ((T*) p_dw)->set_n_numa_node(n_numa_node);
+			}else if(data_access == DW_ACCESS_COL){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERMACHINE, DW_DATAREPL_FULL, DW_ACCESS_COL> T;
+				return ((T*) p_dw)->set_n_numa_node(n_numa_node);
+			}else if(data_access == DW_ACCESS_C2R){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERMACHINE, DW_DATAREPL_FULL, DW_ACCESS_C2R> T;
+				return ((T*) p_dw)->set_n_numa_node(n_numa_node);
+			}else{
+				assert(false);
+			}
+		}else{
+			assert(false);
+		}
+	}else if(model_repl_type == DW_MODELREPL_PERCORE){
+		if(data_repl_type == DW_DATAREPL_SHARDING){
+			if(data_access == DW_ACCESS_ROW){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERCORE, DW_DATAREPL_SHARDING, DW_ACCESS_ROW> T;
+				return ((T*) p_dw)->set_n_numa_node(n_numa_node);
+			}else if(data_access == DW_ACCESS_COL){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERCORE, DW_DATAREPL_SHARDING, DW_ACCESS_COL> T;
+				return ((T*) p_dw)->set_n_numa_node(n_numa_node);
+			}else if(data_access == DW_ACCESS_C2R){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERCORE, DW_DATAREPL_SHARDING, DW_ACCESS_C2R> T;
+				return ((T*) p_dw)->set_n_numa_node(n_numa_node);
+			}else{
+				assert(false);
+			}
+		}else if (data_repl_type == DW_DATAREPL_FULL){
+			if(data_access == DW_ACCESS_ROW){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERCORE, DW_DATAREPL_FULL, DW_ACCESS_ROW> T;
+				return ((T*) p_dw)->set_n_numa_node(n_numa_node);
+			}else if(data_access == DW_ACCESS_COL){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERCORE, DW_DATAREPL_FULL, DW_ACCESS_COL> T;
+				return ((T*) p_dw)->set_n_numa_node(n_numa_node);
+			}else if(data_access == DW_ACCESS_C2R){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERCORE, DW_DATAREPL_FULL, DW_ACCESS_C2R> T;
+				return ((T*) p_dw)->set_n_numa_node(n_numa_node);
+			}else{
+				assert(false);
+			}
+		}else{
+			assert(false);
+		}
+	}else if(model_repl_type == DW_MODELREPL_PERNODE){
+		if(data_repl_type == DW_DATAREPL_SHARDING){
+			if(data_access == DW_ACCESS_ROW){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERNODE, DW_DATAREPL_SHARDING, DW_ACCESS_ROW> T;
+				return ((T*) p_dw)->set_n_numa_node(n_numa_node);
+			}else if(data_access == DW_ACCESS_COL){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERNODE, DW_DATAREPL_SHARDING, DW_ACCESS_COL> T;
+				return ((T*) p_dw)->set_n_numa_node(n_numa_node);
+			}else if(data_access == DW_ACCESS_C2R){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERNODE, DW_DATAREPL_SHARDING, DW_ACCESS_C2R> T;
+				return ((T*) p_dw)->set_n_numa_node(n_numa_node);
+			}else{
+				assert(false);
+			}
+		}else if (data_repl_type == DW_DATAREPL_FULL){
+			if(data_access == DW_ACCESS_ROW){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERNODE, DW_DATAREPL_FULL, DW_ACCESS_ROW> T;
+				return ((T*) p_dw)->set_n_numa_node(n_numa_node);
+			}else if(data_access == DW_ACCESS_COL){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERNODE, DW_DATAREPL_FULL, DW_ACCESS_COL> T;
+				return ((T*) p_dw)->set_n_numa_node(n_numa_node);
+			}else if(data_access == DW_ACCESS_C2R){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_PERNODE, DW_DATAREPL_FULL, DW_ACCESS_C2R> T;
+				return ((T*) p_dw)->set_n_numa_node(n_numa_node);
+			}else{
+				assert(false);
+			}
+		}else{
+			assert(false);
+		}
+	}else if(model_repl_type == DW_MODELREPL_SINGLETHREAD_DEBUG){
+		if(data_repl_type == DW_DATAREPL_SHARDING){
+			if(data_access == DW_ACCESS_ROW){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_SINGLETHREAD_DEBUG, DW_DATAREPL_SHARDING, DW_ACCESS_ROW> T;
+				return ((T*) p_dw)->set_n_numa_node(n_numa_node);
+			}else if(data_access == DW_ACCESS_COL){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_SINGLETHREAD_DEBUG, DW_DATAREPL_SHARDING, DW_ACCESS_COL> T;
+				return ((T*) p_dw)->set_n_numa_node(n_numa_node);
+			}else if(data_access == DW_ACCESS_C2R){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_SINGLETHREAD_DEBUG, DW_DATAREPL_SHARDING, DW_ACCESS_C2R> T;
+				return ((T*) p_dw)->set_n_numa_node(n_numa_node);
+			}else{
+				assert(false);
+			}
+		}else if (data_repl_type == DW_DATAREPL_FULL){
+			if(data_access == DW_ACCESS_ROW){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_SINGLETHREAD_DEBUG, DW_DATAREPL_FULL, DW_ACCESS_ROW> T;
+				return ((T*) p_dw)->set_n_numa_node(n_numa_node);
+			}else if(data_access == DW_ACCESS_COL){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_SINGLETHREAD_DEBUG, DW_DATAREPL_FULL, DW_ACCESS_COL> T;
+				return ((T*) p_dw)->set_n_numa_node(n_numa_node);
+			}else if(data_access == DW_ACCESS_C2R){
+				typedef DenseDimmWitted_Julia<jl_array_t, DW_MODELREPL_SINGLETHREAD_DEBUG, DW_DATAREPL_FULL, DW_ACCESS_C2R> T;
+				return ((T*) p_dw)->set_n_numa_node(n_numa_node);
+			}else{
+				assert(false);
+			}
+		}else{
+			assert(false);
+		}
+	}else{
+		assert(false);
+	}
+	//assert(false);
+	//return -1;
+}
+
+
+
 unsigned int DenseDimmWitted_Register_C2R2(void * p_dw, double (*F_C2R) (const jl_array_t* const p_col, int i_col,
 					const jl_array_t* const p_rows, jl_array_t*, jl_array_t *), int model_repl_type, int data_repl_type, int data_access){
 	if(model_repl_type == DW_MODELREPL_PERMACHINE){
@@ -803,7 +1061,7 @@ unsigned int DenseDimmWitted_Register_Col2(void * p_dw, double (*F_ROW) (const j
 }
 
 void DenseDimmWitted_Register_ModelAvg2(
-	void* p_dw, unsigned int f_handle, void (*F_AVG) (jl_array_t** const p_models, int nreplicas, int ireplica),
+	void* p_dw, unsigned int f_handle, void (*F_AVG) (jl_array_t* const p_models, int nreplicas, int ireplica),
 	int model_repl_type, int data_repl_type, int data_access){
 
 

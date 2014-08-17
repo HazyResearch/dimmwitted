@@ -18,6 +18,12 @@
 
 #include "util.h"
 
+#ifdef _JULIA
+#include "julia.h"
+#include "julia_internal.h"
+#endif
+
+
 /**
  * \brief This is the actual execution engine of DimmWitted.
  * It is specialized by SCHEDTYPE and DATAREPL, and
@@ -41,6 +47,12 @@ template<class RDTYPE,
          DataReplType DATAREPL>
 class DWRun {
 public:
+
+  bool isjulia;
+
+  int n_numa_node;
+
+  int n_thread_per_node;
 
   const RDTYPE * const RDPTR; /**<\brief Pointer to the read-only area.*/
 
@@ -82,7 +94,7 @@ public:
   double exec(const long * const tasks, int ntasks,
          void (*p_map) (long, const RDTYPE * const, WRTYPE * const),
          void (*p_comm) (WRTYPE ** const, int, int),
-         void (*p_finalize) (WRTYPE * const, WRTYPE ** const, int)
+         void (*p_finalize) (WRTYPE * const, int, int)
     );
 
 };

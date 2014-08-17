@@ -199,7 +199,7 @@ public:
 														const jl_array_t* const p_rows, B* const, jl_array_t *);
 		/**<\brief Type of column-to-row-access function*/
 
-	typedef void (*DW_FUNCTION_MAVG) (B** const p_models, int nreplicas, int ireplica);
+	typedef void (*DW_FUNCTION_MAVG) (jl_array_t* const p_models, int nreplicas, int ireplica);
 		/**<\brief Type of the function that conducts model averaging*/
 
 	char* const p_data; /**<\brief Pointer to the data, which is a two dimensional array of type A*/
@@ -327,6 +327,11 @@ public:
 		_access_mode(access_mode),
 		shared_data(_shared_data)
 	{
+
+		dw_row_runner.isjulia = true;
+		dw_col_runner.isjulia = true;
+		dw_c2r_runner.isjulia = true;
+
 		for(int i=0;i<n_rows;i++){
 			row_ids[i] = i;
 		}
@@ -433,6 +438,17 @@ public:
 		}
 	}
 
+	void set_n_numa_node(int n_numa_node){
+		dw_row_runner.n_numa_node = n_numa_node;
+		dw_col_runner.n_numa_node = n_numa_node;
+		dw_c2r_runner.n_numa_node = n_numa_node;
+	}
+
+	void set_n_thread_per_node(int n_thread_per_node){
+		dw_row_runner.n_thread_per_node = n_thread_per_node;
+		dw_col_runner.n_thread_per_node = n_thread_per_node;
+		dw_c2r_runner.n_thread_per_node = n_thread_per_node;
+	}
 
 	/**
 	 * Note that this is CSC from Julia
@@ -457,6 +473,10 @@ public:
 		_access_mode(access_mode),
 		shared_data(_shared_data)
 	{
+
+		dw_row_runner.isjulia = true;
+		dw_col_runner.isjulia = true;
+		dw_c2r_runner.isjulia = true;
 
 		for(int i=0;i<n_rows;i++){
 			row_ids[i] = i;
@@ -602,7 +622,7 @@ public:
 	 * this model averaging function will be used with.
 	 */
 	void register_model_avg(unsigned int f_handle, 
-		void (* f) (B** const p_models, int nreplicas, int ireplica)){
+		void (* f) (jl_array_t* const p_models, int nreplicas, int ireplica)){
 		fs_avg[f_handle] = f;
 	}
 
@@ -627,7 +647,8 @@ public:
 				f_avg = fs_avg.find(f_handle)->second;	
 			}
 			task_row.f = f;
-			rs = dw_row_runner.exec(row_ids, n_rows, dense_map_row_JULIA<B>, f_avg, NULL);
+			dw_row_runner.isjulia = true;
+			rs = dw_row_runner.exec(row_ids, n_rows, dense_map_row_JULIA<B>, NULL, f_avg);
 		}else if(access_mode == DW_ACCESS_COL){
 			const DW_FUNCTION_COL f = fs_col.find(f_handle)->second;
 			DW_FUNCTION_MAVG f_avg = NULL;
@@ -635,7 +656,8 @@ public:
 				f_avg = fs_avg.find(f_handle)->second;	
 			}
 			task_col.f = f;
-			rs = dw_col_runner.exec(col_ids, n_cols, dense_map_col_JULIA<B>, f_avg, NULL);
+			dw_col_runner.isjulia = true;
+			rs = dw_col_runner.exec(col_ids, n_cols, dense_map_col_JULIA<B>, NULL, f_avg);
 		}else if(access_mode == DW_ACCESS_C2R){
 			if(fs_row.find(f_handle) != fs_row.end()){
 				const DW_FUNCTION_ROW  f = fs_row.find(f_handle)->second;
@@ -644,7 +666,8 @@ public:
 					f_avg = fs_avg.find(f_handle)->second;	
 				}
 				task_row.f = f;
-				rs = dw_row_runner.exec(row_ids, n_rows, dense_map_row_JULIA<B>, f_avg, NULL);
+				dw_row_runner.isjulia = true;
+				rs = dw_row_runner.exec(row_ids, n_rows, dense_map_row_JULIA<B>, NULL, f_avg);
 			}else{
 				const DW_FUNCTION_C2R f = fs_c2r.find(f_handle)->second;
 				DW_FUNCTION_MAVG f_avg = NULL;
@@ -652,7 +675,8 @@ public:
 					f_avg = fs_avg.find(f_handle)->second;	
 				}
 				task_c2r.f = f;
-				rs = dw_c2r_runner.exec(col_ids, n_cols, dense_map_c2r_JULIA<B>, f_avg, NULL);
+				dw_c2r_runner.isjulia = true;
+				rs = dw_c2r_runner.exec(col_ids, n_cols, dense_map_c2r_JULIA<B>, NULL, f_avg);
 			}
 		}
 

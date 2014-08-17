@@ -29,6 +29,13 @@ template<class RDTYPE,
 class DWRun<RDTYPE, WRTYPE, DW_MODELREPL_SINGLETHREAD_DEBUG, DATAREPL> {  
 public:
   
+  bool isjulia;
+
+
+  int n_numa_node;
+
+  int n_thread_per_node;
+
   const RDTYPE * const RDPTR;
 
   WRTYPE * const WRPTR;
@@ -39,7 +46,9 @@ public:
         void (*_p_model_allocator) (WRTYPE ** const, const WRTYPE * const)
     ):
     RDPTR(_RDPTR), WRPTR(_WRPTR),
-    p_model_allocator(_p_model_allocator)
+    p_model_allocator(_p_model_allocator),
+    n_numa_node( numa_max_node() + 1),
+    n_thread_per_node(getNumberOfCores()/(numa_max_node() + 1))
   {}
 
   void prepare(){
@@ -49,7 +58,7 @@ public:
   double exec(const long * const tasks, int ntasks,
              double (*p_map) (long, const RDTYPE * const, WRTYPE * const),
          void (*p_comm) (WRTYPE ** const, int, int),
-         void (*p_finalize) (WRTYPE * const, WRTYPE ** const, int)
+         void (*p_finalize) (WRTYPE * const, int, int)
     ){
     double rs = 0.0;
     for(long i=0;i<ntasks;i++){

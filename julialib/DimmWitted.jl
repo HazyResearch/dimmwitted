@@ -141,6 +141,15 @@ function check_is_safe(func, ret, parameter)
 	end
 end
 
+
+function set_n_numa_nodes(_dw, n_numa_nodes)
+	@eval ccall(($(string("set_n_numa_node")), $(_libpath)), Cuint, (Ptr{Void}, Cint, Cint, Cint, Cint), $(_dw._dw), $(n_numa_nodes), $(_dw.modelrepl), $(_dw.datarepl), $(_dw.accessmethod)) 
+end
+
+function set_n_threads_per_node(_dw, n_thread_per_node)
+	@eval ccall(($(string("set_n_thread_per_node")), $(_libpath)), Cuint, (Ptr{Void}, Cint, Cint, Cint, Cint), $(_dw._dw), $(n_thread_per_node), $(_dw.modelrepl), $(_dw.datarepl), $(_dw.accessmethod)) 
+end
+
 function register_row2(_dw, func, supress=false)
 
 	global _data_type, _model_type, _libpath, _nogc
@@ -267,14 +276,14 @@ end
 
 function register_model_avg(_dw, handle, func, supress=false)
 
-	is_safe = check_is_safe(func, Cdouble, (Ptr{Array{_model_type,1}}, Cint, Cint))
+	is_safe = check_is_safe(func, Cdouble, (Array{Array{_model_type,1},1}, Cint, Cint))
 	if is_safe == false && supress==false
 		error("Your function contains LLVM LR `alloc` or `call` other julia functions. We cannot register this function because it protentially is not thread-safe. Use register_model_avg(_dw",",",func,",true) to register this function AT YOUR OWN RISK!")
 	end
 
 	global _data_type, _model_type, _libpath, _nogc
 
-	const func_c = cfunction(func, Cdouble, (Ptr{Array{Cdouble,1}}, Cint, Cint))
+	const func_c = cfunction(func, Cdouble, (Array{Array{Cdouble,1},1}, Cint, Cint))
 
 	append!(_nogc, {func_c, func})
 

@@ -10,7 +10,7 @@ DimmWitted.set_libpath("/Users/czhang/Desktop/Projects/dw_/libdw_julia")
 #    - Modle type is Array{Cdouble}
 #
 nexp = 100000
-nfeat = 1024
+nfeat = 10
 examples = Array(Cdouble, nexp, nfeat+1)
 for row = 1:nexp
 	for col = 1:nfeat
@@ -53,6 +53,20 @@ function grad(row::Array{Cdouble,1}, model::Array{Cdouble,1})
 	return 1.0
 end
 
+function avg(models::Array{Array{Cdouble, 1},1}, nrepl::Cint, irepl::Cint)
+	const julia_nrepl = nrepl + 1
+	const julia_irepl = irepl + 1
+	const nfeat = length(models[julia_irepl])
+	for j = 1:nfeat
+		d = 0.0
+		for i = 1:nrepl
+			d = d + models[i][j]
+		end
+		models[julia_irepl][j] = d/nrepl
+	end
+	return 1.0
+end
+
 ######################################
 # Create a DimmWitted object using data
 # and model. You do not need to specify
@@ -60,7 +74,7 @@ end
 # open() function, which is parametric.
 #
 dw = DimmWitted.open(examples, model, 
-                DimmWitted.MR_PERMACHINE,    
+                DimmWitted.MR_PERNODE,    
                 DimmWitted.DR_SHARDING,      
                 DimmWitted.AC_ROW)
 
@@ -69,8 +83,8 @@ dw = DimmWitted.open(examples, model,
 #
 handle_loss = DimmWitted.register_row(dw, loss)
 handle_grad = DimmWitted.register_row(dw, grad)
-#DimmWitted.register_model_avg(dw, handle_loss, avg, true)
-#DimmWitted.register_model_avg(dw, handle_grad, avg, true)
+DimmWitted.register_model_avg(dw, handle_loss, avg)
+DimmWitted.register_model_avg(dw, handle_grad, avg)
 
 ######################################
 # Run 10 epoches.

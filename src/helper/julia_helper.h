@@ -49,13 +49,14 @@ extern "C" {
 								jl_value_t *shared_data_type, int n_shared_data, void * shared_data);
 
 
+	void set_n_numa_node(void * p_dw, int n_numa_node, int model_repl_type, int data_repl_type, int data_access);
 
-
+	void set_n_thread_per_node(void * p_dw, int n_thread_per_node, int model_repl_type, int data_repl_type, int data_access);
 
 	void Hello();
 
 	void DenseDimmWitted_Register_ModelAvg2(
-		void*, unsigned int, void (*F_AVG) (jl_array_t** const p_models, int nreplicas, int ireplica), int, int, int);
+		void*, unsigned int, void (*F_AVG) (jl_array_t* const p_models, int nreplicas, int ireplica), int, int, int);
 
 
 

@@ -49,6 +49,20 @@ void _pernode_comm(void (*p_comm) (WRTYPE ** const, int, int),
 
 }
 
+template<class RDTYPE, class WRTYPE>
+void _pernode_comm_julia(void (*p_comm) (WRTYPE * const, int, int),
+  WRTYPE * myself,
+  int nreplicas, 
+  int numa_node
+  ){
+
+  numa_run_on_node(numa_node);
+  numa_set_localalloc();
+
+  p_comm(myself, nreplicas, numa_node);
+
+}
+
 /**
  * \brief A specialization of DWRun that maintains a single
  * model replica per socket and one thread per core. Each
@@ -62,6 +76,12 @@ class DWRun<RDTYPE, WRTYPE, DW_MODELREPL_PERNODE,
          DATAREPL> {  
 public:
   
+  bool isjulia;
+
+  int n_numa_node;
+
+  int n_thread_per_node;
+   
   const RDTYPE * const RDPTR;
 
   WRTYPE * const WRPTR;
@@ -74,14 +94,20 @@ public:
         void (*_p_model_allocator) (WRTYPE ** const, const WRTYPE * const)
     ):
     RDPTR(_RDPTR), WRPTR(_WRPTR),
-    p_model_allocator(_p_model_allocator)
+    p_model_allocator(_p_model_allocator),
+    n_numa_node( numa_max_node() + 1),
+    n_thread_per_node(getNumberOfCores()/(numa_max_node() + 1)),
+    isjulia(false)
   {}
 
+#ifdef _JULIA
+  jl_array_t* modelptr;
+#endif
 
   void prepare(){
  
-    int n_numa_nodes = numa_max_node();
-    int n_thread_per_numa = getNumberOfCores()/(n_numa_nodes+1);
+    int n_numa_nodes = n_numa_node - 1;
+    int n_thread_per_numa = n_thread_per_node;
     n_numa_nodes ++;
 
     // create one copy for each numa node
@@ -97,26 +123,43 @@ public:
 
     model_replicas[n_sharding] = WRPTR;
 
+#ifdef _JULIA
+    modelptr = (jl_array_t*) ::operator new(((sizeof(jl_array_t)+jl_array_ndimwords(1)*sizeof(size_t)+15)&-16));
+
+    modelptr->type = jl_typeof(&model_replicas[0]);
+    modelptr->data = (void*) &model_replicas[0];
+    modelptr->length = n_sharding + 1;
+    modelptr->elsize = sizeof(void*);
+    modelptr->ptrarray = true;
+    modelptr->ndims = 1;
+    modelptr->isshared = 1;
+    modelptr->isaligned = 0;
+    modelptr->how = 0;
+    modelptr->nrows = n_sharding + 1;
+    modelptr->maxsize = n_sharding + 1;
+    modelptr->offset = 0;
+#endif
+
   }
 
   double exec(const long * const tasks, int ntasks,
     double (*p_map) (long, const RDTYPE * const, WRTYPE * const),
          void (*p_comm) (WRTYPE ** const, int, int),
-         void (*p_finalize) (WRTYPE * const, WRTYPE ** const, int)
+         void (*p_finalize) (WRTYPE * const, int, int)
     ){
 
     std::vector<std::future<double>> futures;
     std::vector<std::thread> comm_threads;
 
-    int n_numa_nodes = numa_max_node();
-    int n_thread_per_numa = getNumberOfCores()/(n_numa_nodes+1);
+    int n_numa_nodes = n_numa_node - 1;
+    int n_thread_per_numa = n_thread_per_node;
     n_numa_nodes ++;
     int n_sharding = n_numa_nodes;
 
     int ct = -1;
     int total = n_numa_nodes * n_thread_per_numa;
 
-    std::cout << "| Running on " << n_sharding << " Nodes with " << n_thread_per_numa << " Cores..." << std::endl;
+    std::cout << "| Running on " << n_sharding << " Nodes with " << n_thread_per_numa << " Cores Each..." << std::endl;
 
     double rs = 0.0;
 
@@ -132,12 +175,17 @@ public:
         }else{
           futures.push_back(std::async(std::launch::async, _pernode_run_map<RDTYPE, WRTYPE>, p_map, RDPTR, model_replicas[i_sharding], tasks, start, end, i_sharding));
         }
-
         //std::cout << "| Start worker " << i_thread << " on NUMA node " << i_sharding << std::endl;
       }
       //std::cout << "| Start communicator on NUMA node " << i_sharding << std::endl;
-      comm_threads.push_back(std::thread(_pernode_comm<RDTYPE, WRTYPE>, p_comm, model_replicas[i_sharding], model_replicas, n_sharding, i_sharding));
-    
+      if(isjulia == true){
+#ifdef _JULIA
+        comm_threads.push_back(std::thread(_pernode_comm_julia<RDTYPE, WRTYPE>, p_finalize, modelptr, n_sharding, i_sharding));
+#endif
+      }else{
+        comm_threads.push_back(std::thread(_pernode_comm<RDTYPE, WRTYPE>, p_comm, model_replicas[i_sharding], model_replicas, n_sharding, i_sharding));
+
+      }
     }
 
     for(int i=0;i<total;i++){
@@ -148,7 +196,13 @@ public:
       comm_threads[i].join();
     }
 
-    p_comm(model_replicas, n_sharding, n_sharding);
+    if(isjulia == true){
+#ifdef _JULIA
+      p_finalize(modelptr, n_sharding, n_sharding);
+#endif
+    }else{
+      p_comm(model_replicas, n_sharding, n_sharding);
+    }
 
     return rs;
   }

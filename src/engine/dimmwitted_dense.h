@@ -252,6 +252,19 @@ public:
 
 public:
 
+	void set_n_numa_node(int n_numa_node){
+		dw_row_runner.n_numa_node = n_numa_node;
+		dw_col_runner.n_numa_node = n_numa_node;
+		dw_c2r_runner.n_numa_node = n_numa_node;
+	}
+
+	void set_n_thread_per_node(int n_thread_per_node){
+		dw_row_runner.n_thread_per_node = n_thread_per_node;
+		dw_col_runner.n_thread_per_node = n_thread_per_node;
+		dw_c2r_runner.n_thread_per_node = n_thread_per_node;
+	}
+
+
 	/**
 	 * \brief Constructor of dense DimmWitted.
 	 *

@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-
 #ifndef _SCHEDULER_PERCORE_H
 #define _SCHEDULER_PERCORE_H
 
@@ -45,6 +43,12 @@ class DWRun<RDTYPE, WRTYPE, DW_MODELREPL_PERCORE,
         DATAREPL> {  
 public:
   
+  bool isjulia;
+
+  int n_numa_node;
+
+  int n_thread_per_node;
+
   const RDTYPE * const RDPTR;
 
   WRTYPE * const WRPTR;
@@ -57,28 +61,52 @@ public:
         void (*_p_model_allocator) (WRTYPE ** const, const WRTYPE * const)
     ):
     RDPTR(_RDPTR), WRPTR(_WRPTR),
-    p_model_allocator(_p_model_allocator)
+    p_model_allocator(_p_model_allocator),
+    n_numa_node( numa_max_node() + 1),
+    n_thread_per_node(getNumberOfCores()/(numa_max_node() + 1)),
+    isjulia(false)
   {}
 
+#ifdef _JULIA
+  jl_array_t* modelptr;
+#endif
 
   void prepare(){
-    long n_sharding = getNumberOfCores();
+    long n_sharding = n_numa_node * n_thread_per_node;
     model_replicas = new WRTYPE*[n_sharding+1];
     for(int i=0;i<n_sharding;i++){
       p_model_allocator(&model_replicas[i], WRPTR);
     }
     model_replicas[n_sharding] = WRPTR;
+
+#ifdef _JULIA
+    modelptr = (jl_array_t*) ::operator new(((sizeof(jl_array_t)+jl_array_ndimwords(1)*sizeof(size_t)+15)&-16));
+
+    modelptr->type = jl_typeof(&model_replicas[0]);
+    modelptr->data = (void*) &model_replicas[0];
+    modelptr->length = n_sharding + 1;
+    modelptr->elsize = sizeof(void*);
+    modelptr->ptrarray = true;
+    modelptr->ndims = 1;
+    modelptr->isshared = 1;
+    modelptr->isaligned = 0;
+    modelptr->how = 0;
+    modelptr->nrows = n_sharding + 1;
+    modelptr->maxsize = n_sharding + 1;
+    modelptr->offset = 0;
+#endif
+
   }
 
   double exec(const long * const tasks, int ntasks,
     double (*p_map) (long, const RDTYPE * const, WRTYPE * const),
          void (*p_comm) (WRTYPE ** const, int, int),
-         void (*p_finalize) (WRTYPE * const, WRTYPE ** const, int)
+         void (*p_finalize) (WRTYPE * const, int, int)
     ){
 
     std::vector<std::future<double>> futures;
 
-    long n_sharding = getNumberOfCores();
+    long n_sharding = n_numa_node * n_thread_per_node;
     std::cout << "| Running on " << n_sharding << " Cores..." << std::endl;
 
     double rs = 0.0;
@@ -98,8 +126,13 @@ public:
       rs += futures[i].get();
     }
 
-    std::cout << "| Communicating..." << std::endl;
-    p_comm(model_replicas, n_sharding, n_sharding);
+    if(isjulia == true){
+#ifdef _JULIA
+      p_finalize(modelptr, n_sharding, n_sharding);
+#endif
+    }else{
+      p_comm(model_replicas, n_sharding, n_sharding);
+    }
 
     return rs;
   }

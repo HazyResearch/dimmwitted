@@ -50,6 +50,6 @@ runtest:
 
 julia:
 
-	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) -I./src -I./lib/julia/src/ -I./lib/libsupport/ -I./lib/libuv/include/ \
+	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) -I./src -I./lib/julia/src/ -I./lib/libsupport/ -I./lib/libuv/include/ -D _JULIA \
 			$(CPP_JULIA_LIBRARY) $(CPP_LAST)
 
