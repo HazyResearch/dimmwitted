@@ -21,4 +21,4 @@ install:
   - if [ "$CXX" == "clang++" ]; then export CXX="clang++-3.4"; fi
 
 # Change this to your needs
-script: make dep; make; ./example 
+script: make dep; make; LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./lib/numactl-2.0.9 ./example 
