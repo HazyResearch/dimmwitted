@@ -1,4 +1,3 @@
-
 push!(LOAD_PATH, "/home/shubham/Documents/research/dw/julialib/")
 import DimmWitted
 DimmWitted.set_libpath("/home/shubham/Documents/research/dw/libdw_julia")
@@ -7,26 +6,34 @@ DimmWitted.set_libpath("/home/shubham/Documents/research/dw/libdw_julia")
 # The following piece of code creates a
 # synthetic data set:
 #    - Data type is Cdouble
-#    - Modle type is Array{Cdouble}
+#    - Model type is Array{Cdouble}
 #
+
 nexp = 100000
 nfeat = 1024
-examples = Array(Cdouble, nexp, nfeat+1)
+learning_rate = 0.6
+examples = Array(Cdouble, nexp, nfeat+2)
+
 for row = 1:nexp
-	for col = 1:nfeat
-		examples[row, col] = 1
-	end
-	if rand() > 0.8
-		examples[row, nfeat+1] = 0
+	examples[row,nfeat+1] = 1
+	if rand() > 0.5
+		examples[row, nfeat+2] = 0
+		for col = 1:nfeat
+			examples[row, col] = -1.0*col/nfeat	
+		end
 	else
 		examples[row, nfeat+1] = 1
+		for col = 1:nfeat
+			examples[row, col] = col*1.0/nfeat
+			
+		end
 	end
 end
-model = Cdouble[0 for i = 1:nfeat]
+model = Cdouble[0 for i = 1:(nfeat+1)]
 
 ######################################
-# Define the loss function and gradient
-# function for logistic regression
+# Define the loss function and weight update
+# function for Perceptron
 #
 function loss(row::Array{Cdouble,1}, model::Array{Cdouble,1})
 	const label = row[length(row)]
@@ -35,21 +42,22 @@ function loss(row::Array{Cdouble,1}, model::Array{Cdouble,1})
 	for i = 1:nfeat
 		d = d + row[i]*model[i]
 	end
-	return (-label * d + log(exp(d) + 1.0))
+	pred = d >= 0 ? 1:0
+	return 0.6*(label - pred)
 end
 
-function grad(row::Array{Cdouble,1}, model::Array{Cdouble,1})
+function update(row::Array{Cdouble,1}, model::Array{Cdouble,1})
 	const label = row[length(row)]
 	const nfeat = length(model)
 	d = 0.0
 	for i = 1:nfeat
 		d = d + row[i]*model[i]
 	end
-	d = exp(-d)
-		Z = 0.00001 * (-label + 1.0/(1.0+d))
+	pred = d >= 0 ? 1:0
   	for i = 1:nfeat
-  		model[i] = model[i] - row[i] * Z
+		model[i] = model[i] + 0.6*(label - pred)*row[i]
   	end
+
 	return 1.0
 end
 
@@ -69,21 +77,14 @@ println("dimmWitted opened")
 # Register functions.
 #
 handle_loss = DimmWitted.register_row(dw, loss)
-handle_grad = DimmWitted.register_row(dw, grad)
+handle_update = DimmWitted.register_row(dw, update)
 
 println("dimmwitted registered")
 ######################################
-# Run 10 epoches.
+																																																																																																																																																																																																																																																																																		# Run 10 epoches.
 #
-for iepoch = 1:5
+for iepoch = 1:10
 	rs = DimmWitted.exec(dw, handle_loss)
 	println("LOSS: ", rs/nexp)
-	rs = DimmWitted.exec(dw, handle_grad)
+	rs = DimmWitted.exec(dw, handle_update)
 end
-
-
-
-
-
-
-

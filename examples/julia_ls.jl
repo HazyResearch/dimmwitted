@@ -1,20 +1,20 @@
-
-push!(LOAD_PATH, "/Users/czhang/Desktop/Projects/dw_/julialib/")
+push!(LOAD_PATH, "/home/shubham/Documents/research/dw/julialib/")
 import DimmWitted
-DimmWitted.set_libpath("/Users/czhang/Desktop/Projects/dw_/libdw_julia")
+DimmWitted.set_libpath("/home/shubham/Documents/research/dw/libdw_julia")
 
 ######################################
 # The following piece of code creates a
 # synthetic data set:
 #    - Data type is Cdouble
-#    - Modle type is Array{Cdouble}
+#    - Model type is Array{Cdouble}
 #
+
 nexp = 100000
 nfeat = 1024
 examples = Array(Cdouble, nexp, nfeat+1)
 for row = 1:nexp
 	for col = 1:nfeat
-		examples[row, col] = 1
+		examples[row, col] = rand()
 	end
 	if rand() > 0.8
 		examples[row, nfeat+1] = 0
@@ -26,7 +26,7 @@ model = Cdouble[0 for i = 1:nfeat]
 
 ######################################
 # Define the loss function and gradient
-# function for logistic regression
+# function for linear regression
 #
 function loss(row::Array{Cdouble,1}, model::Array{Cdouble,1})
 	const label = row[length(row)]
@@ -35,7 +35,7 @@ function loss(row::Array{Cdouble,1}, model::Array{Cdouble,1})
 	for i = 1:nfeat
 		d = d + row[i]*model[i]
 	end
-	return (-label * d + log(exp(d) + 1.0))
+	return (0.5 * ((d - label)^2))
 end
 
 function grad(row::Array{Cdouble,1}, model::Array{Cdouble,1})
@@ -45,25 +45,10 @@ function grad(row::Array{Cdouble,1}, model::Array{Cdouble,1})
 	for i = 1:nfeat
 		d = d + row[i]*model[i]
 	end
-	d = exp(-d)
-		Z = 0.00001 * (-label + 1.0/(1.0+d))
+	Z = 0.001 * (d - label)
   	for i = 1:nfeat
   		model[i] = model[i] - row[i] * Z
   	end
-	return 1.0
-end
-
-function avg(models::Array{Array{Cdouble, 1},1}, nrepl::Cint, irepl::Cint)
-	const julia_nrepl = nrepl + 1
-	const julia_irepl = irepl + 1
-	const nfeat = length(models[julia_irepl])
-	for j = 1:nfeat
-		d = 0.0
-		for i = 1:nrepl
-			d = d + models[i][j]
-		end
-		models[julia_irepl][j] = d/nrepl
-	end
 	return 1.0
 end
 
@@ -74,22 +59,20 @@ end
 # open() function, which is parametric.
 #
 dw = DimmWitted.open(examples, model, 
-                DimmWitted.MR_PERNODE,
+                DimmWitted.MR_SINGLETHREAD_DEBUG,    
                 DimmWitted.DR_SHARDING,      
                 DimmWitted.AC_ROW)
 
+println("dimmWitted opened")
 ######################################
 # Register functions.
 #
 handle_loss = DimmWitted.register_row(dw, loss)
 handle_grad = DimmWitted.register_row(dw, grad)
-DimmWitted.register_model_avg(dw, handle_loss, avg)
-DimmWitted.register_model_avg(dw, handle_grad, avg)
 
+println("dimmwitted registered")
 ######################################
-# Run 10 epoches.
-#
-for iepoch = 1:10
+for iepoch = 1:5
 	rs = DimmWitted.exec(dw, handle_loss)
 	println("LOSS: ", rs/nexp)
 	rs = DimmWitted.exec(dw, handle_grad)
