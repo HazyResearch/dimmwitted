@@ -1,0 +1,17 @@
+Coreset Sampling: 
+Time Elapsed: 1.896462127
+Size after Sampling: (29800,151)
+
+Least Square with Coreset: 
+Time Elapsed: 0.648365146
+
+Logistic Regression with Coreset: 
+Time Elapsed: 0.634486949
+
+Logistic Regression Using ADMM with Coreset and without QR: 
+Time Elapsed: 12.978779332
+
+
+For QR: elapsed time: 1.105028492 seconds (107958880 bytes allocated)
+Logistic Regression Using ADMM with Coreset and QR: 
+Time Elapsed: 11.719451159

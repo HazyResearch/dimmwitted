@@ -1,0 +1,8 @@
+Least Squares Regression Without Materialization: 
+Time Elapsed: 1.464569579
+
+Logistic Regression Without Materialization: 
+Time Elapsed: 1.777474345
+
+Logistic Regression Using ADMM: 
+Time Elapsed: 34.084311667

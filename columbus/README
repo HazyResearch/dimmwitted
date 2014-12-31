@@ -1,0 +1,60 @@
+FOLDERS - 
+1. tests - Contains various unit tests (running time of different functions)
+2. examples - example scripts for using the code base
+---------------------------------------------------------------------------------------------------------------
+MODULES -
+
+1. julia_ls - Module for least squares regression
+2. julia_lr - Module for logistic regression
+3. julia_perceptron -  Module for perceptron classifier
+4. julia_svm - Module for svm classifier
+5. julia_admm - Module for ADMM (With and Without QR decomposition)
+6. sampling.jl - Contains function for sampling (Naive and Coreset)
+7. transform.jl - Constains function for manually removing/ joining features and projection of data matrix
+8. stepadd_multicore.jl - Stepwise addition of features using multiple cores
+9. stepdrop_multicore.jl - Stepise deletion of features using multiple cores
+10.stepdrop.jl - Stepwise deletion of features
+------------------------------------------------------------------------------------------------------------------
+
+FUNCTIONS - 
+1. least_square
+Module : julia_ls
+
+2. logit_reg
+Module : julia_lr
+
+3. perceptron
+Module : julia_ perceptron
+
+4. svm
+Module : julia_svm
+
+5. admm_qr
+Module : julia_admm
+
+6. admm_noqr
+Module : julia_admm
+
+7. coreset
+Module : sampling
+
+8. naive
+Module : sampling
+
+9. drop_feature
+Module : stepdrop
+
+10. drop_feature_multicore
+Module : stepdrop_multicore
+
+11. add_feature
+Module : stepadd_multicore
+
+12. join
+Module : transform
+
+13. select 
+Module : transform
+
+14. remove
+Module : transform
