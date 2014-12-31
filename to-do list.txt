@@ -1,2 +1,0 @@
-1. Make a powerpoint presentation on the architecture of the system.
-2. Implement high level features like stepadd and stepdrop in julia which can be called diirectly by the user.
