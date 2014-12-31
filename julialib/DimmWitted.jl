@@ -99,20 +99,20 @@ function open{DATATYPE, MODELTYPE}(examples::Array{DATATYPE,2}, model::Array{MOD
 	_examples_c = examples.'
 
 	append!(_nogc, {_examples, _model, _examples_c, _shared_data})
-
+	
 	nrows = size(examples, 1)
 	ncols = size(examples, 2)
 	nmodelel = size(model, 1)
-
+	
 	_data_type = DATATYPE
 	_model_type = MODELTYPE
 	_shared_tupe = typeof(_shared_data)
 
 	t = _shared_tupe
 	n = length(_shared_data)
-
+	
 	_dw = @eval ccall( ($(string("DenseDimmWitted_Open2")), $(_libpath)), Ptr{Void}, (Any, Any, Clonglong, Clonglong, Clonglong, Ptr{Void}, Ptr{Void}, Cint, Cint, Cint, Any, Cint, Ptr{Void}), $(Array{DATATYPE}), $(Array{MODELTYPE}), $(nrows), $(ncols), $(nmodelel), $(_examples_c), $(_model), $(modelrepl), $(datarepl), $(acmethod), $(t), $(n), $(_shared_data))
-
+	
 	dw = DW(_dw, modelrepl, datarepl, acmethod, typeof(_shared_data))
 
 	println("[JULIA-DW] Created Dense DimmWitted Object: ", dw._dw)

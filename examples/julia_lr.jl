@@ -80,10 +80,3 @@ for iepoch = 1:5
 	println("LOSS: ", rs/nexp)
 	rs = DimmWitted.exec(dw, handle_grad)
 end
-
-
-
-
-
-
-
