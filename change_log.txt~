@@ -1,8 +1,0 @@
-1. Manually add libunwind.h and libunwind-common.h to dw/lib/libunwind-1.1/include by copying content from 
-libunwind.h.in and libunwind-common.h.in.
-
-2. In [dw_home] appended CPP_LAST with -l pthread
-
-3. Add #include "uv.h" to the file ./lib/julia/src/julia.h
-
-
