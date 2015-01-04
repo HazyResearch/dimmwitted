@@ -15,7 +15,6 @@
 module julia_admm
 export admm_qr, admm_noqr
 
-using julia_ls
 using Roots
 
 function root(fp, lo, hi)
