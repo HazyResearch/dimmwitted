@@ -17,13 +17,14 @@ module julia_ls
 export least_square
 
 import Base
-push!(LOAD_PATH, "/home/shubham/Documents/research/columbus/julialib/")
-import DimmWitted
 
-path = "$(dirname(Base.source_path()))/../libdw_julia"
-#"$(homedir())/libdw_julia"
-DimmWitted.set_libpath(path)
-#DimmWitted.set_libpath("/home/shubham/Documents/research/columbus/libdw_julia")
+path_lib = "$(dirname(Base.source_path()))/../libdw_julia"
+path_dw = "$(dirname(Base.source_path()))/../julialib/"
+
+push!(LOAD_PATH, path_dw)
+import DimmWitted
+DimmWitted.set_libpath(path_lib)
+
 
 
 ######################################

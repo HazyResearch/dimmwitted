@@ -17,9 +17,14 @@ module julia_lr
 
 export logit_reg
 
-push!(LOAD_PATH, "/home/shubham/Documents/research/dw/julialib/")
+import Base
+path_lib = "$(dirname(Base.source_path()))/../libdw_julia"
+path_dw = "$(dirname(Base.source_path()))/../julialib/"
+
+push!(LOAD_PATH, path_dw)
 import DimmWitted
-DimmWitted.set_libpath("/home/shubham/Documents/research/dw/libdw_julia")
+DimmWitted.set_libpath(path_lib)
+
 
 ######################################
 # The following piece of code creates a
