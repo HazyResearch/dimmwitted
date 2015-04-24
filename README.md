@@ -24,7 +24,7 @@ DimmWitted using
 Now you are ready to install DimmWitted. First, you can
 check out the most recent version of the code by
 
-    git clone https://github.com/zhangce/dw
+    git clone https://github.com/HazyResearch/dimmwitted
 
 By default, this will create a folder called dw, from now
 on, lets use the name `DW_HOME` to refer to this folder.
