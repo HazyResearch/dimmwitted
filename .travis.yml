@@ -23,3 +23,6 @@ install:
 # Change this to your needs
 script: make dep; make; LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./lib/numactl-2.0.9 ./example 
 
+notifications:
+  email:
+    - czhang@cs.wisc.edu
