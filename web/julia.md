@@ -74,11 +74,11 @@ You should see a new file with the name `libdw_julia.dylib` in the DW_HOME folde
 Let's do some simple sanity check to make sure compilation is OK. Open your julia
 shell, and first run (Remeber to replace [DW_HOME] with the real path)
     
-{% highlight julia linenos%}
+```julia
 push!(LOAD_PATH, "[DW_HOME]/julialib/")
 import DimmWitted
 DimmWitted.set_libpath("[DW_HOME]/libdw_julia")
-{% endhighlight %}
+```
 
 These three lines set up the DimmWitted module that you can use to communicate
 with DimmWitted. To validate whether it works or not, type in
@@ -100,11 +100,11 @@ let's say with the name `julia_lr.jl`. The first
 three lines of the code is the same as the validation
 step
 
-{% highlight julia linenos%}
+```julia
 push!(LOAD_PATH, "[DW_HOME]/julialib/")
 import DimmWitted
 DimmWitted.set_libpath("[DW_HOME]/libdw_julia")
-{% endhighlight %}
+```
 
 ####Prepare the Data
 
@@ -112,7 +112,7 @@ We will generate a synthetic data set to play with. The following code
 creates a synthetic classifcation problem with 100000 examples, each of
 which has 10 features and 1 boolean prediction in 0/1.
 
-{% highlight julia linenos%}
+```julia
 nexp = 100000
 nfeat = 100
 examples = Array(Cdouble, nexp, nfeat+1)
@@ -127,7 +127,7 @@ for row = 1:nexp
 	end
 end
 model = Cdouble[0 for i = 1:nfeat]
-{% endhighlight %}
+```
 
 We see that this piece of code creates a two-dimensional
 array `examples`, each row of which is an example, and
@@ -162,7 +162,7 @@ just to make sure you change the signature of the function accordingly.
 
 Let's now define the loss function with this signature.
 
-{% highlight julia linenos%}
+```julia
 function loss(row::Array{Cdouble,1}, model::Array{Cdouble,1})
 	const label = row[length(row)]
 	const nfeat = length(model)
@@ -172,7 +172,7 @@ function loss(row::Array{Cdouble,1}, model::Array{Cdouble,1})
 	end
 	return (-label * d + log(exp(d) + 1.0))
 end
-{% endhighlight %}
+```
 
 We can see that this function contains three components:
 
@@ -185,7 +185,7 @@ We can see that this function contains three components:
 
 Similary, we can write the gradient function
 
-{% highlight julia linenos%}
+```julia
 function grad(row::Array{Cdouble,1}, model::Array{Cdouble,1})
 	const label = row[length(row)]
 	const nfeat = length(model)
@@ -200,7 +200,7 @@ function grad(row::Array{Cdouble,1}, model::Array{Cdouble,1})
   	end
 	return 1.0
 end
-{% endhighlight %}
+```
 
 We can see that this `grad` function is similar to `loss`, with the
 difference that in Line 10-12, we update the model.
@@ -212,12 +212,12 @@ regressor defined by the function `grad` and `loss` on the data
 `examples` and `models`. We first create an object with
 the specification of the data and how we want to access the data:
 
-{% highlight julia linenos%}
+```julia
 dw = DimmWitted.open(examples, model, 
                 DimmWitted.MR_SINGLETHREAD_DEBUG,    
                 DimmWitted.DR_SHARDING,      
                 DimmWitted.AC_ROW)
-{% endhighlight %}
+```
 
 This command creates a DimmWitted object `dw` by using
 the `open()` function. Line 1 specifies the data and model,
@@ -244,10 +244,10 @@ After we create this `dw` object, we need to let it know
 about the two functions, i.e., `loss` and `grad`, that we
 defined. We can do it by
 
-{% highlight julia linenos%}
+```julia
 handle_loss = DimmWitted.register_row(dw, loss)
 handle_grad = DimmWitted.register_row(dw, grad)
-{% endhighlight %}
+```
 
 Each function call will register the function to DimmWitted
 and returns a handle that can be used later. Here, because
@@ -262,10 +262,10 @@ run successfully, you should see in the output:
 Now lets run a function! Lets first see what is the loss
 we can get given the model that we initialized with all zeros:
 
-{% highlight julia linenos%}
+```julia
 rs = DimmWitted.exec(dw, handle_loss)
 println("LOSS: ", rs/nexp)
-{% endhighlight %}
+```
 
 You should see in the output
 
@@ -273,9 +273,9 @@ You should see in the output
 
 We can then run a gradient step:
 
-{% highlight julia linenos%}
+```julia
 rs = DimmWitted.exec(dw, handle_grad)
-{% endhighlight %}
+```
 
 Lets re-calculate the loss, and this time we will
 get
@@ -286,13 +286,13 @@ We see that it gets smaller!
 
 Now we can run ten iterations:
 
-{% highlight julia linenos%}
+```julia
 for iepoch = 1:10
 	rs = DimmWitted.exec(dw, handle_loss)
 	println("LOSS: ", rs/nexp)
 	rs = DimmWitted.exec(dw, handle_grad)
 end
-{% endhighlight %}
+```
 
 and get the final loss
 
@@ -309,12 +309,12 @@ main memory by taking advantage of massive parallelism.
 To speed-up our toy example, we only need to do one single
 twist
 
-{% highlight julia linenos%}
+```julia
 dw = DimmWitted.open(examples, model, 
                 DimmWitted.MR_PERMACHINE,    
                 DimmWitted.DR_SHARDING,      
                 DimmWitted.AC_ROW)
-{% endhighlight %}
+```
 
 If we compare the Line 2, we can see that we are using
 a different strategy called `DimmWitted.MR_PERMACHINE`,
