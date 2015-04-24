@@ -89,4 +89,6 @@ should see
 
 Now you have successfully installed DimmWitted. The next step
 is to learn how to write an application inside DimmWitted.
+You can find examples in the `examples` folder and the walkthrough
+[here](https://github.com/HazyResearch/dimmwitted/wiki)
 
