@@ -1,9 +1,3 @@
----
-layout: page
-title: Julia Support
-permalink: /julia/
----
-
 DimmWitted provides a [Julia](http://julialang.org/) interface to make it
 easy for you to write DimmWitted application in Julia. In this way,
 you can take advantage of both the high-level language in Julia and
