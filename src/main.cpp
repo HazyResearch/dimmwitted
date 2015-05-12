@@ -1,31 +1,74 @@
-// Copyright 2014 Hazy Research (http://i.stanford.edu/hazy)
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
 
+#include "types.h"
+#include "cv.h"
+#include "timer.h"
+#include "dot.h"
+#include <iostream>
 
-#include "app/glm_dense_sgd.h"
-#include "app/glm_sparse_sgd.h"
-#include "app/glm_dense_scd.h"
-
-/**
- * \brief This is one example of running SGD for logistic regression
- * in DimmWitted. You can find more examples in test/glm_dense.cc
- * and test/glm_sparse.cc, and the documented code in 
- * app/glm_dense_sgd.h
- */
-int main(int argc, char** argv){
-  double rs = test_glm_dense_sgd<DW_HOGWILD, DW_SHARDING>();
-  std::cout << "SUM OF MODEL (Should be ~1.3-1.4): " << rs << std::endl;
-  return 0;
+void report_range(){
+	std::cout << MIN_VALUE<LPBLAS_i8>() << " ~ " << MAX_VALUE<LPBLAS_i8>() << std::endl;
+	std::cout << MIN_VALUE<LPBLAS_i16>() << " ~ " << MAX_VALUE<LPBLAS_i16>() << std::endl;
+	std::cout << MIN_VALUE<LPBLAS_f32>() << " ~ " << MAX_VALUE<LPBLAS_f32>() << std::endl;
 }
 
+template<typename LPBLAS_TYPE>
+void test_dot(){
+	const int N = 100000000;
+	LPBLAS_TYPE  * dst = new LPBLAS_TYPE[N];
+	LPBLAS_TYPE  * dst3= new LPBLAS_TYPE[N];
+	LPBLAS_f32 * src = new LPBLAS_f32[N];
+	LPBLAS_f32 * dst2= new LPBLAS_f32[N];
+	double dot_ans = 0.0;
+	for(int i=0;i<N;i++){
+		src[i] = 2*drand48()-1;
+		dot_ans += src[i];
+		dst2[i] = 0.0;
+		dst[i] = 0;
+		dst3[i] = MAX_VALUE<LPBLAS_TYPE>();	// this is 1 in our encoding
+	}
+	Timer t;
+	double te;
+	double size;
+
+	t.restart();
+	convert_dense_ceil(src, dst, N);
+	te = t.elapsed();
+	size = 1.0*N*(sizeof(LPBLAS_TYPE)+sizeof(LPBLAS_f32))/1024/1024;
+	//std::cout << "    TIME = " << te << std::endl;
+	//std::cout << "    SIZE = " << size << " MB" << std::endl;
+	//std::cout << "    BAND = " << size/te << " MB/s" << std::endl;
+	std::cout << "| Convert (f32->" << sizeof(LPBLAS_TYPE)*8 << ") = " << size/te << " MB/s" << "   t = " << te << " seconds." << std::endl;
+
+	t.restart();
+	convert_dense_ceil(dst, dst2, N);
+	te = t.elapsed();
+	size = 1.0*N*(sizeof(LPBLAS_TYPE)+sizeof(LPBLAS_f32))/1024/1024;
+	//std::cout << "    TIME = " << te << std::endl;
+	//std::cout << "    SIZE = " << size << " MB" << std::endl;
+	//std::cout << "    BAND = " << size/te << " MB/s" << std::endl;
+	std::cout << "| Convert (" << sizeof(LPBLAS_TYPE)*8 << "->f32) = " << size/te << " MB/s" << "   t = " << te << " seconds." << std::endl;
+
+	for(int i=0;i<5;i++){
+		std::cout << "|    Approximate: "  << src[i] << " -> " << dst2[i] << std::endl;
+	}
+
+	t.restart();
+	float dot = dot_dense(dst, dst3, N);
+	te = t.elapsed();
+	size = 1.0*N*(sizeof(LPBLAS_TYPE)+sizeof(LPBLAS_TYPE))/1024/1024;
+	//std::cout << "    TIME = " << te << std::endl;
+	//std::cout << "    SIZE = " << size << " MB" << std::endl;
+	//std::cout << "    BAND = " << size/te << " MB/s" << std::endl;
+	std::cout << "| Dot (" << sizeof(LPBLAS_TYPE)*8 << ") = " << size/te << " MB/s" << "   t = " << te << " seconds." << std::endl;
+	std::cout << "|    Approximate: " << dot << " -> " << dot_ans << std::endl;
+	std::cout << std::endl;
+
+}
+
+int main(int argc, char ** argv){
+	//report_range();
+	test_dot<LPBLAS_i8>();
+	test_dot<LPBLAS_i16>();
+	test_dot<LPBLAS_f32>();
+	return 0;
+}

@@ -1,94 +1,47 @@
-DimmWitted [![Build Status](https://travis-ci.org/HazyResearch/deepdive.svg?branch=master)](https://travis-ci.org/HazyResearch/deepdive)
-==
+# lpBLAS: Limited Precision BLAS Subset
 
-DimmWitted is a high-performance execution engine for statistical analytics
-and is the core of [DeepDive](deepdive.stanford.edu).To see the type of analytics that is enabled by DimmmWitted, you can find examples in our paper
-http://arxiv.org/abs/1403.7550.
+This contains the implementation of 8-bit int and 16-bit int
+for a subset of BLAS Level1 procedures. The goal is to make
+a single thread eats more than 80% of the total memory bandwidth
+(12GB/s) for functions like dot products, random rounding,
+and conversions. For now, we only care about functions that
+might help the NIPS version of Buckwild!.
 
-# Installation
 
-We first describe how to install DimmWitted.
+### Limitations
+  - Currently, only support Haswell.
+  - TODO: Working on Sparse domain (May 12 2015)
 
-##Dependencies
+### Current Performance
 
-DimmWitted is designed to be compiled on Linux
-or MacOS. Before downloading the system, you need
-one C++ compiler, and we have successfully compiled
-DimmWitted using
+$ ./a.out 
+| Convert (f32->8) = 11216.5 MB/s   t = 0.042512 seconds.
+| Convert (8->f32) = 8589.18 MB/s   t = 0.055516 seconds.
+|    Approximate: -0.20707 -> -0.204724
+|    Approximate: 0.680971 -> 0.677165
+|    Approximate: -0.293328 -> -0.291339
+|    Approximate: -0.106833 -> -0.102362
+|    Approximate: -0.362614 -> -0.362205
+| Dot (8) = 10604.6 MB/s   t = 0.017986 seconds.
+|    Approximate: 4527.75 -> 4631.64
 
-  - clang++ (Apple LLVM version 6.0, clang-600.0.45.3)
-  - g++ 4.8.2 (On Linux)
+| Convert (f32->16) = 11276.5 MB/s   t = 0.050743 seconds.
+| Convert (16->f32) = 9488.82 MB/s   t = 0.060303 seconds.
+|    Approximate: 0.495487 -> 0.495468
+|    Approximate: 0.528764 -> 0.528764
+|    Approximate: -0.321082 -> -0.321055
+|    Approximate: 0.9764 -> 0.976379
+|    Approximate: -0.934567 -> -0.934538
+| Dot (16) = 12464.7 MB/s   t = 0.030604 seconds.
+|    Approximate: -2828.06 -> -2828.25
 
-##Downloading and Compiling DimmWitted
-
-Now you are ready to install DimmWitted. First, you can
-check out the most recent version of the code by
-
-    git clone https://github.com/HazyResearch/dimmwitted
-
-By default, this will create a folder called dw, from now
-on, lets use the name `DW_HOME` to refer to this folder.
-
-DimmWitted can be used to write different applications, and
-we include an example one in the repositary. To compoile
-this example, you can type in
-
-    cd DW_HOME
-    make
-
-This will generate a binary file with the name `example`, to
-validate whether the installation is successful, you can try
-to run this binary file by typing in
-
-    ./example
-
-This should output:
-
-    TIME=0.062495001 secs THROUGHPUT=12.208008 GB/sec.
-    1.2478489    loss=0.50147917
-    TIME=0.063390002 secs THROUGHPUT=12.035643 GB/sec.
-    1.2431277    loss=0.50159193
-    TIME=0.063591003 secs THROUGHPUT=11.9976 GB/sec.
-    1.2588885    loss=0.50123058
-    TIME=0.062996998 secs THROUGHPUT=12.110727 GB/sec.
-    1.2576657    loss=0.50125708
-    TIME=0.062763996 secs THROUGHPUT=12.155686 GB/sec.
-    SUM OF MODEL (Should be ~1.3-1.4): 1.2576657
-
-This binary contains one example of using DimmWitted to train
-a logistic regression model on a synthetic data set. To check
-whether DimmWitted works properly on your machine for this application, 
-you should see the last line to be similar to 
-
-    SUM OF MODEL (Should be ~1.3-1.4): 1.2576657
-
-Note that the number 1.26 might vary, but it should not be too far
-away from 1.3-1.4.
-
-##Testing
-
-DimmWitted contains a set of unit tests to better make sure
-it works properly on your machine. To run our suite of test
-cases, you first need to compile googletest by typing in
-
-    make test_dep
-
-And then to run test case, you can type in
-
-    make runtest
-
-Please allow couple minutes for the test to run, and ideally you
-should see
-
-    ...
-    [----------] Global test environment tear-down
-    [==========] 12 tests from 2 test cases ran. (91775 ms total)
-    [  PASSED  ] 12 tests.
-
-##What's Next?
-
-Now you have successfully installed DimmWitted. The next step
-is to learn how to write an application inside DimmWitted.
-You can find examples in the `examples` folder and the walkthrough
-[here](https://github.com/HazyResearch/dimmwitted/wiki).
+| Convert (f32->32) = 13658.6 MB/s   t = 0.055858 seconds.
+| Convert (32->f32) = 11921.5 MB/s   t = 0.063997 seconds.
+|    Approximate: -0.968859 -> -0.968859
+|    Approximate: -0.929235 -> -0.929235
+|    Approximate: 0.164984 -> 0.164984
+|    Approximate: 0.762335 -> 0.762335
+|    Approximate: -0.772878 -> -0.772878
+| Dot (32) = 12588.1 MB/s   t = 0.060608 seconds.
+|    Approximate: 2773.13 -> 2772.8
 
