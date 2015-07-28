@@ -19,7 +19,17 @@
  * second number is the number of '\n'.
  *
  **/
-void get_corpus_stats(std::string filename, long * n_elements, long * n_examples);
+void get_corpus_stats(std::string filename, size_t * const n_elements, size_t * const n_examples);
 
+/**
+ * Given a file in LIBSVM's format and the number of elements
+ * and examples, create the data structure that DW's sparse
+ * engine can take as input as in examples/logistic_regression_sparse_sgd.cpp
+ *
+ * This function should be used after `get_corpus_stats` to get statistics.
+ *
+ **/
+void create_dw_corpus(std::string filename, const size_t n_elements, const size_t n_examples,
+	double * const p_examples, long * const p_cols, long * const p_rows);
 
 #endif
