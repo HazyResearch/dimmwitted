@@ -7,7 +7,7 @@
 void get_corpus_stats(std::string filename, size_t * n_elements, size_t * n_examples){
 
   FILE *fp = fopen(filename.c_str(),"r");
-  size_t elements, nexps;
+  size_t elements, examples;
   char *endptr;
   char *idx, *val, *label;
   ssize_t read;
@@ -17,13 +17,12 @@ void get_corpus_stats(std::string filename, size_t * n_elements, size_t * n_exam
     exit(1);
   }
 
-  elements = 0;
-  nexps = 0;
+  elements = 0; 
+  examples = 0;
 
   size_t max_line_len = 1024;
   char * line = new char[max_line_len];
   
-
   while ((read = getline(&line, &max_line_len, fp)) != -1) {
 
     char *p = strtok(line," \t"); // label
@@ -36,11 +35,14 @@ void get_corpus_stats(std::string filename, size_t * n_elements, size_t * n_exam
       ++elements;
     }
     ++elements;
-    ++nexps;
+    ++examples;
   }
 
   delete[] line;
   fclose(fp);
+
+  *n_elements = elements;
+  *n_examples = examples;
 
 }
 

@@ -31,6 +31,9 @@ endif
 exp:
 	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) examples/example.cpp -o example $(CPP_LAST)
 
+svm-help.o: application/dw-svm-helper.cpp
+	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) application/dw-svm-helper.cpp -c -o svm-help.o $(CPP_LAST)
+
 dep:
 	cd ./lib/numactl-2.0.9; CXX=$(CXX) make; cd ../..
 
