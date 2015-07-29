@@ -32,7 +32,7 @@ check out the most recent version of the code by
 
     git clone https://github.com/HazyResearch/dimmwitted
 
-By default, this will create a folder called dw, from now
+By default, this will create a folder called dimmwitted, from now
 on, lets use the name `DW_HOME` to refer to this folder.
 
 There are two ways that DimmWitted can be used. We write
