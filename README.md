@@ -19,7 +19,7 @@ DimmWitted using
   - clang++ (Apple LLVM version 6.0, clang-600.0.45.3)
   - g++ 4.8.2 (On Linux)
 
-To let DimmWitted know whch GCC you are using, you can use options
+To let DimmWitted know which GCC you are using, you can use options
 like
 
     CXX=g++-4.8 ...
