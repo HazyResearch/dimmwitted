@@ -16,6 +16,7 @@
 #ifndef _SCHEDULER_STRAWMAN_H
 #define _SCHEDULER_STRAWMAN_H
 
+#include <fstream>
 #include "engine/scheduler.h"
 
 /**
@@ -54,6 +55,20 @@ public:
   void prepare(){
 
   }
+
+  double dump_row(const long * const tasks, int ntasks,
+             double (*p_map) (long, const RDTYPE * const, WRTYPE * const),
+         void (*p_comm) (WRTYPE ** const, int, int),
+         void (*p_finalize) (WRTYPE * const, int, int),
+         std::string filename
+    ){
+    std::ofstream fout(filename.c_str());
+    for(long i=0;i<ntasks;i++){
+      fout << p_map(tasks[i], RDPTR, WRPTR) << std::endl;
+    }
+    return 0;
+  }
+
 
   double exec(const long * const tasks, int ntasks,
              double (*p_map) (long, const RDTYPE * const, WRTYPE * const),

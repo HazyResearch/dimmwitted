@@ -332,6 +332,18 @@ public:
 		return current_handle_id ++;
 	}
 
+	double dump_row(unsigned int f_handle, std::string filename){
+		assert(access_mode == DW_ACCESS_ROW);
+		const DW_FUNCTION_ROW * const f = fs_row.find(f_handle)->second;
+		DW_FUNCTION_MAVG f_avg = NULL;
+		if(fs_avg.find(f_handle) != fs_avg.end()){
+			f_avg = *fs_avg.find(f_handle)->second;	
+		}
+		task_row.f = *f;
+		dw_row_runner.dump_row(row_ids, n_rows, sparse_map_row<A,B>, f_avg, NULL, filename);
+		return 0;
+	}
+
 	double exec(unsigned int f_handle){
 
 		double data_byte = 1.0 * sizeof(A) * n_elems + sizeof(long) * n_elems + sizeof(long) * n_rows;
