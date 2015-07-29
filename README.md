@@ -1,4 +1,4 @@
-DimmWitted [![Build Status](https://travis-ci.org/HazyResearch/deepdive.svg?branch=master)](https://travis-ci.org/HazyResearch/deepdive)
+DimmWitted [![Build Status](https://travis-ci.org/HazyResearch/dimmwitted.svg?branch=master)](https://travis-ci.org/HazyResearch/dimmwitted)
 ==
 
 DimmWitted is a high-performance execution engine for statistical analytics
