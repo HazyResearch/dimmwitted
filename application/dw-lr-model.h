@@ -49,7 +49,8 @@ double f_lr_dump_sparse(const SparseVector<double>* const ex, GLMModelExample_Sp
     dot += ex->p[i] * model[ex->idxs[i]];
   }
   double prob = 1.0/(1.0+exp(-dot));
-  return prob;
+  if(prob > 0.5) return 1;
+  else return -1;
 }
 
 
