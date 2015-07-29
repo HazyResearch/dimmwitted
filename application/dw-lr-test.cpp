@@ -80,7 +80,7 @@ int main(int argc, char ** argv){
   printf("Dumping the result to %s...\n", output_file.c_str());
   SparseDimmWitted<double, GLMModelExample_Sparse, DW_MODELREPL_SINGLETHREAD_DEBUG, DW_DATAREPL_SHARDING, DW_ACCESS_ROW> 
     dw_dumper(p_examples, p_rows, p_cols, n_examples, n_features+1, n_elements, &model);
-  unsigned int f_handle_dumper = dw_dumper.register_row(f_lr_accuracy_sparse);
+  unsigned int f_handle_dumper = dw_dumper.register_row(f_lr_dump_sparse);
   dw_dumper.dump_row(f_handle_dumper, output_file);
 
   exit(EXIT_SUCCESS);
