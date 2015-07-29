@@ -31,12 +31,12 @@ endif
 exp:
 	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) examples/example.cpp -o example $(CPP_LAST)
 
-svm: svm-help.o application/dw-svm-train.cpp
-	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) application/dw-svm-train.cpp -o dw-svm-train svm-help.o $(CPP_LAST)
-	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) application/dw-svm-test.cpp -o dw-svm-test svm-help.o $(CPP_LAST)
+lr: lr-help.o application/dw-lr-train.cpp
+	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) application/dw-lr-train.cpp -o dw-lr-train lr-help.o $(CPP_LAST)
+	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) application/dw-lr-test.cpp -o dw-lr-test lr-help.o $(CPP_LAST)
 
-svm-help.o: application/dw-svm-helper.cpp
-	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) application/dw-svm-helper.cpp -c -o svm-help.o $(CPP_LAST)
+lr-help.o: application/dw-lr-helper.cpp
+	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) application/dw-lr-helper.cpp -c -o lr-help.o $(CPP_LAST)
 
 dep:
 	cd ./lib/numactl-2.0.9; CXX=$(CXX) make; cd ../..
