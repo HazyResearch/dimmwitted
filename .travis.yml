@@ -24,7 +24,7 @@ install:
 script: 
   make dep; 
   make; 
-  LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./lib/numactl-2.0.9 ./example 
+  LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./lib/numactl-2.0.9 ./example ;
   LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./lib/numactl-2.0.9 sh ./test/test_lr.sh
 
 notifications:
