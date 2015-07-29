@@ -20,7 +20,7 @@ DimmWitted using
   - g++ 4.8.2 (On Linux)
 
 Note that DimmWitted needs a compiler with C++0x support.
-To let DimmWitted know which GCC you are using during compilation, you can use options
+To let DimmWitted know which compiler you are using during compilation, you can use options
 like
 
     CXX=g++-4.8 ...
