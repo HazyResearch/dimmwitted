@@ -199,6 +199,7 @@ public:
 		dw_col_runner(DWRun<TASK_COL_SPARSE<A,B>, B, model_repl_type, data_repl_type>(&task_col, p_model, sparse_model_allocator<A,B>)),
 		dw_c2r_runner(DWRun<TASK_C2R_SPARSE<A,B>, B, model_repl_type, data_repl_type>(&task_c2r, p_model, sparse_model_allocator<A,B>))
 	{
+
 		for(int i=0;i<n_rows;i++){
 			row_ids[i] = i;
 		}
