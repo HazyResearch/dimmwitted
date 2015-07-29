@@ -87,7 +87,7 @@ size_t create_dw_corpus(std::string filename, const size_t n_elements, const siz
   for(int i=0;i<n_examples;i++){
     inst_max_index = -1; // strtol gives 0 if wrong format, and precomputed kernel has <index> start from 0
     
-    getline(&line, &max_line_len, fp);
+    read = getline(&line, &max_line_len, fp);
 
     label = strtok(line," \t\n");
     if(label == NULL) // empty line
