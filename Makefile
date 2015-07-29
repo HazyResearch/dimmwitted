@@ -21,7 +21,7 @@ ifndef CXX
 CXX=clang++
 endif
 
-CPP_FLAG = -O3 -std=c++11 -stdlib=libc++ 
+CPP_FLAG = -O3 -std=c++11  
 CPP_INCLUDE = -I./src
 CPP_JULIA_LIBRARY = -dynamiclib src/helper/julia_helper.cpp -o libdw_julia.dylib
 CPP_LAST = 
