@@ -59,7 +59,7 @@ specifies the stepsize, `-e` specifies the number of epoches
 to run, and `-r` specifies the regularization parameter (l2).
 This will produces a model file `test/a6a.model`.
 
-To test this model file on test data, you can run
+To test this model on test data, you can run
 
     ./dw-lr-test ./test/a6a.t ./test/a6a.model ./test/a6a.output
     
