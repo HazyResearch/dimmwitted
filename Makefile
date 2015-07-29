@@ -33,6 +33,7 @@ exp:
 
 svm: svm-help.o application/dw-svm-train.cpp
 	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) application/dw-svm-train.cpp -o dw-svm-train svm-help.o $(CPP_LAST)
+	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) application/dw-svm-test.cpp -o dw-svm-test svm-help.o $(CPP_LAST)
 
 svm-help.o: application/dw-svm-helper.cpp
 	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) application/dw-svm-helper.cpp -c -o svm-help.o $(CPP_LAST)
