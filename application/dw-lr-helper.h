@@ -29,7 +29,7 @@ void get_corpus_stats(std::string filename, size_t * const n_elements, size_t * 
  * This function should be used after `get_corpus_stats` to get statistics.
  *
  **/
-void create_dw_corpus(std::string filename, const size_t n_elements, const size_t n_examples,
-	double * const p_examples, long * const p_cols, long * const p_rows);
+size_t create_dw_corpus(std::string filename, const size_t n_elements, const size_t n_examples,
+	double * & p_examples, long * & p_cols, long * & p_rows);
 
 #endif
