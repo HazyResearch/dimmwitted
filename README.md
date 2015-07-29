@@ -19,6 +19,7 @@ DimmWitted using
   - clang++ (Apple LLVM version 6.0, clang-600.0.45.3)
   - g++ 4.8.2 (On Linux)
 
+Note that DimmWitted needs a compiler with C++0x support.
 To let DimmWitted know which GCC you are using during compilation, you can use options
 like
 
