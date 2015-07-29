@@ -9,7 +9,8 @@ void exit_input_error(int line_num)
 
 
 /**
- * I can make this 10x faster with SIMD. But lets do a slower version first.
+ * This code is largely borrowed from LIBLINEAR.
+ * TODO: This can be made faster with SIMD.
  **/
 void get_corpus_stats(std::string filename, size_t * n_elements, size_t * n_examples){
 
@@ -54,7 +55,8 @@ void get_corpus_stats(std::string filename, size_t * n_elements, size_t * n_exam
 }
 
 /**
- * I can make this 10x faster with SIMD. But lets do a slower version first.
+ * This code is largely borrowed from LIBLINEAR.
+ * TODO: This can be made faster with SIMD.
  **/
 size_t create_dw_corpus(std::string filename, const size_t n_elements, const size_t n_examples,
   double * & p_examples, long * & p_cols, long * & p_rows){
