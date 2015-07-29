@@ -31,11 +31,11 @@ endif
 exp:
 	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) examples/example.cpp -o example $(CPP_LAST)
 
-lr: lr-help.o 
+lr: lr-help.o application/dw-lr-train.cpp application/dw-lr-test.cpp
 	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) application/dw-lr-train.cpp -o dw-lr-train lr-help.o $(CPP_LAST)
 	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) application/dw-lr-test.cpp -o dw-lr-test lr-help.o $(CPP_LAST)
 
-lr-help.o: 
+lr-help.o: application/dw-lr-helper.cpp 
 	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) application/dw-lr-helper.cpp -c -o lr-help.o $(CPP_LAST)
 
 dep:
