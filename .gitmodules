@@ -1,0 +1,3 @@
+[submodule "lib/lpblas"]
+	path = lib/lpblas
+	url = git@github.com:HazyResearch/dimmwitted
