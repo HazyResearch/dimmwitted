@@ -1,10 +1,12 @@
 
+#ifndef _LPBLAS_DOT_H
+#define _LPBLAS_DOT_H
+
 #include <iostream>
 #include "types.h"
 #include "immintrin.h"
 
-#ifndef _LPBLAS_DOT_H
-#define _LPBLAS_DOT_H
+namespace lpblas {
 
 template<typename LPBLAS_TYPE>
 float dot_dense(const LPBLAS_TYPE * const x,
@@ -236,10 +238,9 @@ float dot_dense<LPBLAS_f32>(const LPBLAS_f32 * const x,
   return toreturn;
 }
 
+}
 
 #endif
-
-
 
 
 

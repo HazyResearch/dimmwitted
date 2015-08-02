@@ -5,6 +5,8 @@
 #include "dot.h"
 #include <iostream>
 
+using namespace lpblas;
+
 void report_range(){
 	std::cout << MIN_VALUE<LPBLAS_i8>() << " ~ " << MAX_VALUE<LPBLAS_i8>() << std::endl;
 	std::cout << MIN_VALUE<LPBLAS_i16>() << " ~ " << MAX_VALUE<LPBLAS_i16>() << std::endl;

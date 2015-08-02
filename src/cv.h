@@ -1,8 +1,10 @@
 
-#include "types.h"
-
 #ifndef _LPBLAS_CV_H
 #define _LPBLAS_CV_H
+
+#include "types.h"
+
+namespace lpblas {
 
 template<typename LPBLAS_TYPE1, typename LPBLAS_TYPE2>
 void convert_dense_ceil(const LPBLAS_TYPE1 * const src,
@@ -100,6 +102,8 @@ void convert_dense_ceil<LPBLAS_f32,LPBLAS_f32>(const LPBLAS_f32  * const src,
 //        dst[i] = DIVIDEDBY * src[i];
 //    }
 //}
+
+}
 
 #endif
 
