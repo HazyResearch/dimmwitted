@@ -17,6 +17,9 @@
 #define _GLM_DENSE_SGD_H
 
 #include "dimmwitted.h"
+#include "dot.h"
+
+using namespace lpblas;
 
 /**
  * \brief A model object. This model contains
@@ -31,14 +34,14 @@
  */
 class GLMModelExample{
 public:
-  double * const p;
+  LPBLAS_i16 * const p;
   int n;
   
   GLMModelExample(int _n):
-    n(_n), p(new double[_n]){}
+    n(_n), p(new LPBLAS_i16[_n]){}
 
   GLMModelExample( const GLMModelExample& other ) :
-     n(other.n), p(new double[other.n]){
+     n(other.n), p(new LPBLAS_i16[other.n]){
     for(int i=0;i<n;i++){
       p[i] = other.p[i];
     }
@@ -56,16 +59,18 @@ void f_lr_modelavg(GLMModelExample** const p_models, /**< set of models*/
                    int nreplicas, /**< number of models in the above set */
                    int ireplica /**< id of the model that needs updates*/
                    ){
-  GLMModelExample * p_model = p_models[ireplica];
-  double sum = 0.0;
-  for(int i=0;i<p_model->n;i++){
-    sum = 0.0;
-    for(int j=0;j<nreplicas;j++){
-      sum += p_models[j]->p[i];
-    }
-    (p_model->p)[i] = sum/nreplicas; // update the ireplica'th model by
-                                     // the average.
-  }
+  std::cerr << "Model averaging function not implemented yet." << std::endl;
+  exit(1);
+  // GLMModelExample * p_model = p_models[ireplica];
+  // float sum = 0.0;
+  // for(int i=0;i<p_model->n;i++){
+  //   sum = 0.0;
+  //   for(int j=0;j<nreplicas;j++){
+  //     sum += p_models[j]->p[i];
+  //   }
+  //   (p_model->p)[i] = sum/nreplicas; // update the ireplica'th model by
+  //                                    // the average.
+  // }
 }
 
 /**
@@ -74,13 +79,10 @@ void f_lr_modelavg(GLMModelExample** const p_models, /**< set of models*/
  * one row of the data (ex), and the current model,
  * returns the loss.
  */
-double f_lr_loss(const DenseVector<double>* const ex, GLMModelExample* const p_model){
-  double * model = p_model->p;
-  double label = ex->p[ex->n-1];
-  double dot = 0.0;
-  for(int i=0;i<ex->n-1;i++){
-    dot += ex->p[i] * model[i];
-  }
+float f_lr_loss(const DenseVector<LPBLAS_i16>* const ex, GLMModelExample* const p_model){
+  LPBLAS_i16 * model = p_model->p;
+  float label = (float)(ex->p[ex->n-1]);
+  float dot = dot_dense(&ex->p[0], model, ex->n-1);
   return  - label * dot + log(exp(dot) + 1.0);
 }
 
@@ -91,18 +93,18 @@ double f_lr_loss(const DenseVector<double>* const ex, GLMModelExample* const p_m
  * and update the model with the gradient.
  * 
  */
-double f_lr_grad(const DenseVector<double>* const ex, GLMModelExample* const p_model){
+float f_lr_grad(const DenseVector<float>* const ex, GLMModelExample* const p_model){
 
-  double * model = p_model->p;
-  double label = ex->p[ex->n-1];
+  float * model = p_model->p;
+  float label = ex->p[ex->n-1];
 
-  double dot = 0.0;
+  float dot = 0.0;
   for(int i=0;i<ex->n-1;i++){
     dot += ex->p[i] * model[i];
   }
 
-  const double d = exp(-dot);
-  const double Z = 0.00001 * (-label + 1.0/(1.0+d));
+  const float d = exp(-dot);
+  const float Z = 0.00001 * (-label + 1.0/(1.0+d));
 
   for(int i=0;i<ex->n-1;i++){
     model[i] -= ex->p[i] * Z;
@@ -120,7 +122,7 @@ double f_lr_grad(const DenseVector<double>* const ex, GLMModelExample* const p_m
  * \tparam DATAREPL Data replication strategy.
  */
 template<ModelReplType MODELREPL, DataReplType DATAREPL>
-double test_glm_dense_sgd(){
+float test_glm_dense_sgd(){
 
   // First, create a synthetic data set. 
   // Given nexp examples and nfeat features,
@@ -130,8 +132,8 @@ double test_glm_dense_sgd(){
   // 
   long nexp = 100000; // number of rows
   long nfeat = 1024;  // number of features
-  double ** examples = new double* [nexp];  // pointers to each row
-  double * content = new double[nexp*(nfeat+1)];  // buffer to actually hold objects
+  float ** examples = new float* [nexp];  // pointers to each row
+  float * content = new float[nexp*(nfeat+1)];  // buffer to actually hold objects
   for(long i=0;i<nexp;i++){
     examples[i] = &content[i*(nfeat+1)];
     for(int j=0;j<nfeat;j++){
@@ -151,13 +153,13 @@ double test_glm_dense_sgd(){
 
   // Thrid, create a DenseDimmWitted object because the synthetic data set
   // we created is dense. This object has multiple templates,
-  //    - double: the type of the data (type of elements in ``examples'')
+  //    - float: the type of the data (type of elements in ``examples'')
   //    - GLMModelExample: the type of the model
   //    - MODELREPL: Model replication strategy
   //    - DATAREPL: Data replication strategy
   //    - DW_ROW: Access method
   //
-  DenseDimmWitted<double, GLMModelExample, MODELREPL, DATAREPL, DW_ACCESS_ROW> 
+  DenseDimmWitted<float, GLMModelExample, MODELREPL, DATAREPL, DW_ACCESS_ROW> 
     dw(examples, nexp, nfeat+1, &model);
 
   // Fourth, register functions.
@@ -172,9 +174,9 @@ double test_glm_dense_sgd(){
   //   2. sum the model (only for getting statistics)
   //   3. update the model
   //
-  double sum = 0.0;
+  float sum = 0.0;
   for(int i_epoch=0;i_epoch<2;i_epoch++){
-    double loss = dw.exec(f_handle_loss)/nexp;
+    float loss = dw.exec(f_handle_loss)/nexp;
     sum = 0.0;
     for(int i=0;i<nfeat;i++){
       sum += model.p[i];
@@ -184,9 +186,9 @@ double test_glm_dense_sgd(){
 
     Timer t;
     dw.exec(f_handle_grad);
-    double data_byte = 1.0 * sizeof(double) * nexp * nfeat;
-    double te = t.elapsed();
-    double throughput_gb = data_byte / te / 1024 / 1024 / 1024;
+    float data_byte = 1.0 * sizeof(float) * nexp * nfeat;
+    float te = t.elapsed();
+    float throughput_gb = data_byte / te / 1024 / 1024 / 1024;
     std::cout << "TIME=" << te << " secs" << " THROUGHPUT=" << throughput_gb << " GB/sec." << std::endl;
   }
 
