@@ -91,7 +91,7 @@ public:
    * in app/glm_dense_sgd.h for an example.
    * \param p_finalize Ignore this guy...
    */
-  double exec(const long * const tasks, int ntasks,
+  float exec(const long * const tasks, int ntasks,
          void (*p_map) (long, const RDTYPE * const, WRTYPE * const),
          void (*p_comm) (WRTYPE ** const, int, int),
          void (*p_finalize) (WRTYPE * const, int, int)

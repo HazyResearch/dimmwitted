@@ -36,9 +36,9 @@ template<class A, class B>
 class TASK_ROW{
 public:
 	DenseVector<A>* row_pointers; /**<A list of pointer to rows*/
-	double (*f) (const DenseVector<A>* const, B* const);	/**<Row-access function to execute*/
+	float (*f) (const DenseVector<A>* const, B* const);	/**<Row-access function to execute*/
 	TASK_ROW(DenseVector<A>* const _row_pointers, 
-			double (* _f) (const DenseVector<A>* const p_row, B* const p_model)):
+			float (* _f) (const DenseVector<A>* const p_row, B* const p_model)):
 		row_pointers(_row_pointers), f(_f)
 	{}
 	TASK_ROW(){}
@@ -54,9 +54,9 @@ template<class A, class B>
 class TASK_COL{
 public:
 	DenseVector<A>* col_pointers; /**<A list of pointer to columns*/
-	double (*f) (const DenseVector<A>* const, B* const);	/**<Column-access function to execute*/
+	float (*f) (const DenseVector<A>* const, B* const);	/**<Column-access function to execute*/
 	TASK_COL(DenseVector<A>* const _col_pointers,
-		double (*_f) (const DenseVector<A>* const, B* const)):
+		float (*_f) (const DenseVector<A>* const, B* const)):
 		col_pointers(_col_pointers), f(_f)
 	{}
 	TASK_COL(){}
@@ -74,13 +74,13 @@ public:
 	DenseVector<A>*  col_pointers; /**<A list of pointer to columns*/
 	Pair<long, long> *  c2r_col_2_rowbuffer_idxs; /**<See DenseDimmWitted::c2r_col_2_rowbuffer_idxs*/
 	DenseVector<A>*  c2r_row_pointers_buffer; /**<See DenseDimmWitted::_c2r_row_pointers_buffer*/
-	double (*f) (const DenseVector<A>* const p_col, int i_col,
+	float (*f) (const DenseVector<A>* const p_col, int i_col,
 																		 const DenseVector<A>* const p_rows, int, B* const);
 																	/**<Column-to-row-access function to execute*/
 
 	TASK_C2R(DenseVector<A>* _col_pointers, Pair<long, long> * _c2r_col_2_rowbuffer_idxs,
 		DenseVector<A>* _c2r_row_pointers_buffer, 
-		double (*_f) (const DenseVector<A>* const p_col, int i_col,
+		float (*_f) (const DenseVector<A>* const p_col, int i_col,
 																		 const DenseVector<A>* const p_rows, int, B* const)):
 		col_pointers(_col_pointers), c2r_col_2_rowbuffer_idxs(_c2r_col_2_rowbuffer_idxs),
 		c2r_row_pointers_buffer(_c2r_row_pointers_buffer), f(_f)
@@ -97,7 +97,7 @@ public:
  * \tparam B type of model (See DenseDimmWitted)
  */
 template<class A, class B>
-double dense_map_row (long i_task, const TASK_ROW<A,B> * const rddata, B * const wrdata){
+float dense_map_row (long i_task, const TASK_ROW<A,B> * const rddata, B * const wrdata){
 	return rddata->f(&rddata->row_pointers[i_task], wrdata);
 }
 
@@ -108,7 +108,7 @@ double dense_map_row (long i_task, const TASK_ROW<A,B> * const rddata, B * const
  * \tparam B type of model (See DenseDimmWitted)
  */
 template<class A, class B>
-double dense_map_col (long i_task, const TASK_COL<A,B> * const rddata, B * const wrdata){
+float dense_map_col (long i_task, const TASK_COL<A,B> * const rddata, B * const wrdata){
 	return rddata->f(&rddata->col_pointers[i_task], wrdata);
 }
 
@@ -119,7 +119,7 @@ double dense_map_col (long i_task, const TASK_COL<A,B> * const rddata, B * const
  * \tparam B type of model (See DenseDimmWitted)
  */
 template<class A, class B>
-double dense_map_c2r (long i_task, const TASK_C2R<A,B> * const rddata, B * const wrdata){
+float dense_map_c2r (long i_task, const TASK_C2R<A,B> * const rddata, B * const wrdata){
 	const Pair<long, long> & row_ptrs = rddata->c2r_col_2_rowbuffer_idxs[i_task];
 	return rddata->f(&rddata->col_pointers[i_task], i_task, &(rddata->c2r_row_pointers_buffer[row_ptrs.first]), 
 						row_ptrs.second, wrdata);
@@ -150,13 +150,13 @@ template<class A, class B, ModelReplType model_repl_type, DataReplType data_repl
 class DenseDimmWitted{
 public:
 
-	typedef double (*DW_FUNCTION_ROW) (const DenseVector<A>* const, B* const);
+	typedef float (*DW_FUNCTION_ROW) (const DenseVector<A>* const, B* const);
 		/**<\brief Type of row-access function*/
 
-	typedef double (*DW_FUNCTION_COL) (const DenseVector<A>* const, B* const);
+	typedef float (*DW_FUNCTION_COL) (const DenseVector<A>* const, B* const);
 		/**<\brief Type of column-access function*/
 
-	typedef double (*DW_FUNCTION_C2R) (const DenseVector<A>* const p_col, int i_col,
+	typedef float (*DW_FUNCTION_C2R) (const DenseVector<A>* const p_col, int i_col,
 																		 const DenseVector<A>* const p_rows, int, B* const);
 		/**<\brief Type of column-to-row-access function*/
 
@@ -354,7 +354,7 @@ public:
 	 * \return function handle that can used later to call this function.
 	 */
 	unsigned int register_row(
-		double (* f) (const DenseVector<A>* const p_row, B* const p_model)
+		float (* f) (const DenseVector<A>* const p_row, B* const p_model)
 	){	
 		fs_row[current_handle_id] = f;
 		return current_handle_id ++;
@@ -366,7 +366,7 @@ public:
 	 * \return function handle that can used later to call this function.
 	 */
 	unsigned int register_col(
-		double (* f) (const DenseVector<A>* const p_col, int n_row, B* const p_model)
+		float (* f) (const DenseVector<A>* const p_col, int n_row, B* const p_model)
 	){
 		fs_col[current_handle_id] = f;
 		return current_handle_id ++;
@@ -378,7 +378,7 @@ public:
 	 * \return function handle that can used later to call this function.
 	 */
 	unsigned int register_c2r(
-		double (* f) (const DenseVector<A>* const p_col, int i_col,
+		float (* f) (const DenseVector<A>* const p_col, int i_col,
 					const DenseVector<A>* const p_rows, int n_rows,
 					B* const p_model)
 	){
@@ -401,14 +401,14 @@ public:
 	/**
 	 * \brief Execute the function with a given handle.
 	 *
-	 * \return The function for each handle returns a double value
+	 * \return The function for each handle returns a float value
 	 * after processing each row/column, this exec function will
 	 * return a sum of these. This can be used, say, to calculate 
 	 * the loss.  
 	 */
-	double exec(unsigned int f_handle){
+	float exec(unsigned int f_handle){
 
-		double rs = 0.0;
+		float rs = 0.0;
 
 		if(access_mode == DW_ACCESS_ROW){
 			const DW_FUNCTION_ROW f = fs_row.find(f_handle)->second;

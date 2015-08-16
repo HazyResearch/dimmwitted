@@ -18,12 +18,12 @@
 #include "engine/scheduler.h"
 
 template<class RDTYPE, class WRTYPE>
-double _percore_run_map(double (*p_map) (long, const RDTYPE * const, WRTYPE * const),
+float _percore_run_map(float (*p_map) (long, const RDTYPE * const, WRTYPE * const),
   const RDTYPE * const RDPTR, 
               WRTYPE * const WRPTR, 
               const long * const tasks,
               long start, long end){
-  double rs = 0.0;
+  float rs = 0.0;
   for(long i=start;i<end;i++){
     rs += p_map(tasks[i], RDPTR, WRPTR);
   }
@@ -98,18 +98,18 @@ public:
 
   }
 
-  double exec(const long * const tasks, int ntasks,
-    double (*p_map) (long, const RDTYPE * const, WRTYPE * const),
+  float exec(const long * const tasks, int ntasks,
+    float (*p_map) (long, const RDTYPE * const, WRTYPE * const),
          void (*p_comm) (WRTYPE ** const, int, int),
          void (*p_finalize) (WRTYPE * const, int, int)
     ){
 
-    std::vector<std::future<double>> futures;
+    std::vector<std::future<float>> futures;
 
     long n_sharding = n_numa_node * n_thread_per_node;
     std::cout << "| Running on " << n_sharding << " Cores..." << std::endl;
 
-    double rs = 0.0;
+    float rs = 0.0;
     
     for(int i_sharding=0;i_sharding<n_sharding;i_sharding++){
       long start = ((long)(ntasks/n_sharding)+1) * i_sharding;

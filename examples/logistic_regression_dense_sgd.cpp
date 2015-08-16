@@ -79,10 +79,10 @@ void f_lr_modelavg(GLMModelExample** const p_models, /**< set of models*/
  * one row of the data (ex), and the current model,
  * returns the loss.
  */
-double f_lr_loss(const DenseVector<LPBLAS_i16>* const ex, GLMModelExample* const p_model){
+float f_lr_loss(const DenseVector<LPBLAS_i16>* const ex, GLMModelExample* const p_model){
   LPBLAS_i16* model = p_model->p;
-  double label = (double)(ex->p[ex->n-1]);
-  double dot = (double)dot_dense(&ex->p[0], model, ex->n-1);
+  float label = (float)(ex->p[ex->n-1]);
+  float dot = (float)dot_dense(&ex->p[0], model, ex->n-1);
   return  - label * dot + log(exp(dot) + 1.0);
 }
 
@@ -93,7 +93,7 @@ double f_lr_loss(const DenseVector<LPBLAS_i16>* const ex, GLMModelExample* const
  * and update the model with the gradient.
  * 
  */
-double f_lr_grad(const DenseVector<LPBLAS_i16>* const ex, GLMModelExample* const p_model){
+float f_lr_grad(const DenseVector<LPBLAS_i16>* const ex, GLMModelExample* const p_model){
 
   LPBLAS_i16* model = p_model->p;
   const float label = (float)(ex->p[ex->n-1]);

@@ -18,7 +18,7 @@
 #include "engine/scheduler.h"
 
 template<class RDTYPE, class WRTYPE>
-double _pernode_run_map(double (*p_map) (long, const RDTYPE * const, WRTYPE * const),
+float _pernode_run_map(float (*p_map) (long, const RDTYPE * const, WRTYPE * const),
     const RDTYPE * const RDPTR, 
     WRTYPE * const WRPTR, 
     const long * const tasks,
@@ -27,7 +27,7 @@ double _pernode_run_map(double (*p_map) (long, const RDTYPE * const, WRTYPE * co
   numa_run_on_node(numa_node);
   numa_set_localalloc();
 
-  double rs = 0.0;
+  float rs = 0.0;
   for(long i=start;i<end;i++){
     rs += p_map(tasks[i], RDPTR, WRPTR);
   }
@@ -142,13 +142,13 @@ public:
 
   }
 
-  double exec(const long * const tasks, int ntasks,
-    double (*p_map) (long, const RDTYPE * const, WRTYPE * const),
+  float exec(const long * const tasks, int ntasks,
+    float (*p_map) (long, const RDTYPE * const, WRTYPE * const),
          void (*p_comm) (WRTYPE ** const, int, int),
          void (*p_finalize) (WRTYPE * const, int, int)
     ){
 
-    std::vector<std::future<double>> futures;
+    std::vector<std::future<float>> futures;
     std::vector<std::thread> comm_threads;
 
     int n_numa_nodes = n_numa_node - 1;
@@ -161,7 +161,7 @@ public:
 
     std::cout << "| Running on " << n_sharding << " Nodes with " << n_thread_per_numa << " Cores Each..." << std::endl;
 
-    double rs = 0.0;
+    float rs = 0.0;
 
     for(int i_sharding=0;i_sharding<n_sharding;i_sharding++){
       for(int i_thread=0;i_thread<n_thread_per_numa;i_thread++){

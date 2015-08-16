@@ -20,12 +20,12 @@
 #include "engine/scheduler.h"
 
 template<class RDTYPE, class WRTYPE>
-double _hogwild_run_map(double (*p_map) (long, const RDTYPE * const, WRTYPE * const),
+float _hogwild_run_map(float (*p_map) (long, const RDTYPE * const, WRTYPE * const),
   const RDTYPE * const RDPTR, 
               WRTYPE * const WRPTR, 
               const long * const tasks,
               long start, long end){
-  double rs = 0.0;
+  float rs = 0.0;
   for(long i=start;i<end;i++){
     rs += p_map(tasks[i], RDPTR, WRPTR);
   }
@@ -68,13 +68,13 @@ public:
 
   }
 
-  double exec(const long * const tasks, int ntasks,
-    double (*p_map) (long, const RDTYPE * const, WRTYPE * const),
+  float exec(const long * const tasks, int ntasks,
+    float (*p_map) (long, const RDTYPE * const, WRTYPE * const),
          void (*p_comm) (WRTYPE ** const, int, int),
          void (*p_finalize) (WRTYPE * const, int, int)
     ){
 
-    std::vector<std::future<double>> futures;
+    std::vector<std::future<float>> futures;
 
     int n_sharding = n_numa_node * n_thread_per_node;
     std::cout << "| Running on " << n_sharding << " Cores..." << std::endl;
@@ -92,7 +92,7 @@ public:
       }
     }
 
-    double rs = 0.0;
+    float rs = 0.0;
 
     for(int i=0;i<n_sharding;i++){
       rs += futures[i].get();

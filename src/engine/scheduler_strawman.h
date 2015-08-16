@@ -56,8 +56,8 @@ public:
 
   }
 
-  double dump_row(const long * const tasks, int ntasks,
-             double (*p_map) (long, const RDTYPE * const, WRTYPE * const),
+  float dump_row(const long * const tasks, int ntasks,
+             float (*p_map) (long, const RDTYPE * const, WRTYPE * const),
          void (*p_comm) (WRTYPE ** const, int, int),
          void (*p_finalize) (WRTYPE * const, int, int),
          std::string filename
@@ -70,12 +70,12 @@ public:
   }
 
 
-  double exec(const long * const tasks, int ntasks,
-             double (*p_map) (long, const RDTYPE * const, WRTYPE * const),
+  float exec(const long * const tasks, int ntasks,
+             float (*p_map) (long, const RDTYPE * const, WRTYPE * const),
          void (*p_comm) (WRTYPE ** const, int, int),
          void (*p_finalize) (WRTYPE * const, int, int)
     ){
-    double rs = 0.0;
+    float rs = 0.0;
     for(long i=0;i<ntasks;i++){
       rs += p_map(tasks[i], RDPTR, WRPTR);
     }
