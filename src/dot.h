@@ -170,7 +170,7 @@ float dot_dense<LPBLAS_i16>(const LPBLAS_i16 * const x,
 
   const float MAX = MAX_VALUE<LPBLAS_i16>();
   const float DIVIDEDBY = 1.0 / MAX / MAX;
-  const int n_remainder = N % 16;
+  const int n_remainder = N % 8;
   
   float rs[4];
   
@@ -197,6 +197,42 @@ float dot_dense<LPBLAS_i16>(const LPBLAS_i16 * const x,
     toreturn += x[i] * y[i] * DIVIDEDBY;
   }
   return toreturn;
+}
+
+
+void axpy(LPBLAS_i16 * const x,
+           const LPBLAS_i16 * const y,
+           float a,
+           int N){
+
+  const int n_remainder = N % 4;
+  
+  __m64 immx, immy;
+
+  __m128 fmmx, fmmy, fmma;
+
+  for(int i = n_remainder; i < N; i+=4){
+    immx = _mm_cvtsi64_m64(*(__int64_t const *)&x[i]);
+    immy = _mm_cvtsi64_m64(*(__int64_t const *)&y[i]);
+    
+    fmmx = _mm_cvtpi16_ps(immx);
+    fmmy = _mm_cvtpi16_ps(immy);
+
+    fmma = _mm_set_ps1(a);
+
+    fmmy = _mm_mul_ps(fmmy, fmma);
+    fmmx = _mm_add_ps(fmmx, fmmy);
+
+    immx = _mm_cvtps_pi16(fmmx);
+
+    *(__int64_t *)&x[i] = _mm_cvtm64_si64(immx);
+  }
+
+  for(int i = 0; i < n_remainder; i++){
+    x[i] = (LPBLAS_i16)((float)x[i] + ((float)y[i] * a));
+  }
+
+  return;
 }
 
 #else
