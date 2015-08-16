@@ -79,10 +79,10 @@ void f_lr_modelavg(GLMModelExample** const p_models, /**< set of models*/
  * one row of the data (ex), and the current model,
  * returns the loss.
  */
-float f_lr_loss(const DenseVector<LPBLAS_i16>* const ex, GLMModelExample* const p_model){
-  LPBLAS_i16 * model = p_model->p;
-  float label = (float)(ex->p[ex->n-1]);
-  float dot = dot_dense(&ex->p[0], model, ex->n-1);
+double f_lr_loss(const DenseVector<LPBLAS_i16>* const ex, GLMModelExample* const p_model){
+  LPBLAS_i16* model = p_model->p;
+  double label = (double)(ex->p[ex->n-1]);
+  double dot = (double)dot_dense(&ex->p[0], model, ex->n-1);
   return  - label * dot + log(exp(dot) + 1.0);
 }
 
@@ -93,22 +93,21 @@ float f_lr_loss(const DenseVector<LPBLAS_i16>* const ex, GLMModelExample* const 
  * and update the model with the gradient.
  * 
  */
-float f_lr_grad(const DenseVector<float>* const ex, GLMModelExample* const p_model){
+double f_lr_grad(const DenseVector<LPBLAS_i16>* const ex, GLMModelExample* const p_model){
 
-  float * model = p_model->p;
-  float label = ex->p[ex->n-1];
+  LPBLAS_i16* model = p_model->p;
+  const float label = (float)(ex->p[ex->n-1]);
 
-  float dot = 0.0;
-  for(int i=0;i<ex->n-1;i++){
-    dot += ex->p[i] * model[i];
-  }
+  const float dot = dot_dense(&ex->p[0], model, ex->n-1);
 
   const float d = exp(-dot);
-  const float Z = 0.00001 * (-label + 1.0/(1.0+d));
+  const float Z = 0.005 * (-label + 1.0/(1.0+d));
 
   for(int i=0;i<ex->n-1;i++){
-    model[i] -= ex->p[i] * Z;
+    model[i] -= (LPBLAS_i16)((float)ex->p[i] * Z);
   }
+
+  //axpy(p_model->p, &ex->p[0], Z, ex->n-1);
 
   return 1.0;
 }
@@ -132,14 +131,14 @@ float test_glm_dense_sgd(){
   // 
   long nexp = 100000; // number of rows
   long nfeat = 1024;  // number of features
-  float ** examples = new float* [nexp];  // pointers to each row
-  float * content = new float[nexp*(nfeat+1)];  // buffer to actually hold objects
+  LPBLAS_i16 ** examples = new LPBLAS_i16* [nexp];  // pointers to each row
+  LPBLAS_i16 * content = new LPBLAS_i16[nexp*(nfeat+1)];  // buffer to actually hold objects
   for(long i=0;i<nexp;i++){
     examples[i] = &content[i*(nfeat+1)];
     for(int j=0;j<nfeat;j++){
-      examples[i][j] = 1;
+      examples[i][j] = MAX_VALUE<LPBLAS_i16>() / 10;
     }
-    examples[i][nfeat] = drand48() > 0.8 ? 0 : 1.0; // randomly generate labels 
+    examples[i][nfeat] = (LPBLAS_i16)(drand48() > 0.8 ? 0 : 1); // randomly generate labels 
                                                     // with 80% 1 and 20% 0.
   }
 
@@ -159,7 +158,7 @@ float test_glm_dense_sgd(){
   //    - DATAREPL: Data replication strategy
   //    - DW_ROW: Access method
   //
-  DenseDimmWitted<float, GLMModelExample, MODELREPL, DATAREPL, DW_ACCESS_ROW> 
+  DenseDimmWitted<LPBLAS_i16, GLMModelExample, MODELREPL, DATAREPL, DW_ACCESS_ROW> 
     dw(examples, nexp, nfeat+1, &model);
 
   // Fourth, register functions.
@@ -186,7 +185,7 @@ float test_glm_dense_sgd(){
 
     Timer t;
     dw.exec(f_handle_grad);
-    float data_byte = 1.0 * sizeof(float) * nexp * nfeat;
+    float data_byte = 1.0 * sizeof(LPBLAS_i16) * nexp * nfeat;
     float te = t.elapsed();
     float throughput_gb = data_byte / te / 1024 / 1024 / 1024;
     std::cout << "TIME=" << te << " secs" << " THROUGHPUT=" << throughput_gb << " GB/sec." << std::endl;
@@ -195,7 +194,7 @@ float test_glm_dense_sgd(){
   // Return the sum of the model. This value should be 
   // around 1.3-1.4 for this example.
   //
-  return sum;
+  return sum / MAX_VALUE<LPBLAS_i16>();
 }
 
 #endif

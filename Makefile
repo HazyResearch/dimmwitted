@@ -7,7 +7,7 @@ ifndef CXX
 CXX=g++
 endif
 
-CPP_FLAG = -O3 -std=c++11 -I./lib/libunwind-1.1/include -L./lib/numactl-2.0.9 -I./lib/numactl-2.0.9
+CPP_FLAG = -O3 -mavx -std=c++11 -I./lib/libunwind-1.1/include -L./lib/numactl-2.0.9 -I./lib/numactl-2.0.9
 CPP_INCLUDE = -I./src -I./lib/lpblas/src
 CPP_JULIA_LIBRARY = -fPIC -lnuma -shared src/helper/julia_helper.cpp -o libdw_julia.so
 CPP_LAST = -lrt -lnuma -l pthread
@@ -21,14 +21,14 @@ ifndef CXX
 CXX=clang++
 endif
 
-CPP_FLAG = -O3 -std=c++11  
+CPP_FLAG = -O3 -mavx -std=c++11  
 CPP_INCLUDE = -I./src -I./lib/lpblas/src
 CPP_JULIA_LIBRARY = -dynamiclib src/helper/julia_helper.cpp -o libdw_julia.dylib
 CPP_LAST = 
 
 endif
 
-exp:
+exp: examples/example.cpp examples/logistic_regression_dense_sgd.cpp
 	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) examples/example.cpp -o example $(CPP_LAST)
 
 lr: lr-help.o application/dw-lr-train.cpp application/dw-lr-test.cpp
@@ -38,9 +38,6 @@ lr: lr-help.o application/dw-lr-train.cpp application/dw-lr-test.cpp
 lr-help.o: application/dw-lr-helper.cpp 
 	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) application/dw-lr-helper.cpp -c -o lr-help.o $(CPP_LAST)
 
-
-lplr: examples/logistic_regression_dense_sgd.cpp
-	$(CXX) -mavx $(CPP_FLAG) $(CPP_INCLUDE) examples/logistic_regression_dense_sgd.cpp -o dw-lplr $(CPP_LAST)
 
 dep:
 	cd ./lib/numactl-2.0.9; CXX=$(CXX) make; cd ../..
