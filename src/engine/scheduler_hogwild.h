@@ -13,7 +13,6 @@
 // limitations under the License.
 
 
-
 #ifndef _SCHEDULER_HOGWILD_H
 #define _SCHEDULER_HOGWILD_H
 
