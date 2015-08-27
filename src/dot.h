@@ -13,7 +13,29 @@ float dot_dense(const LPBLAS_TYPE * const x,
                 const LPBLAS_TYPE * const y,
                                      int N);
 
-#ifdef __AVX2__
+#if defined(LPBLAS_AUTOVEC)
+
+template<typename LPBLAS_TYPE>
+float dot_dense(const LPBLAS_TYPE * const x,
+                const LPBLAS_TYPE * const y,
+                                     int N) {
+
+  const float MAX = MAX_VALUE<LPBLAS_TYPE>();
+  const float DIVIDEDBY = 1.0 / MAX / MAX;
+
+  float acc = 0.0;
+
+  for(int i = 0; i < N; i++) {
+    int xi = x[i];
+    int yi = y[i];
+
+    acc += xi * yi;
+  }
+
+  return acc * DIVIDEDBY;
+}
+
+#elif defined(__AVX2__)
 
 /**
  * The following dot product algorithm is free from possible overflow.
@@ -200,40 +222,40 @@ float dot_dense<LPBLAS_i16>(const LPBLAS_i16 * const x,
 }
 
 
-void axpy(LPBLAS_i16 * const x,
-           const LPBLAS_i16 * const y,
-           float a,
-           int N){
+// void axpy(LPBLAS_i16 * const x,
+//            const LPBLAS_i16 * const y,
+//            float a,
+//            int N){
 
-  const int n_remainder = N % 4;
+//   const int n_remainder = N % 4;
   
-  __m64 immx, immy;
+//   __m64 immx, immy;
 
-  __m128 fmmx, fmmy, fmma;
+//   __m128 fmmx, fmmy, fmma;
 
-  for(int i = n_remainder; i < N; i+=4){
-    immx = _mm_cvtsi64_m64(*(__int64_t const *)&x[i]);
-    immy = _mm_cvtsi64_m64(*(__int64_t const *)&y[i]);
+//   for(int i = n_remainder; i < N; i+=4){
+//     immx = _mm_cvtsi64_m64(*(__int64_t const *)&x[i]);
+//     immy = _mm_cvtsi64_m64(*(__int64_t const *)&y[i]);
     
-    fmmx = _mm_cvtpi16_ps(immx);
-    fmmy = _mm_cvtpi16_ps(immy);
+//     fmmx = _mm_cvtpi16_ps(immx);
+//     fmmy = _mm_cvtpi16_ps(immy);
 
-    fmma = _mm_set_ps1(a);
+//     fmma = _mm_set_ps1(a);
 
-    fmmy = _mm_mul_ps(fmmy, fmma);
-    fmmx = _mm_add_ps(fmmx, fmmy);
+//     fmmy = _mm_mul_ps(fmmy, fmma);
+//     fmmx = _mm_add_ps(fmmx, fmmy);
 
-    immx = _mm_cvtps_pi16(fmmx);
+//     immx = _mm_cvtps_pi16(fmmx);
 
-    *(__int64_t *)&x[i] = _mm_cvtm64_si64(immx);
-  }
+//     *(__int64_t *)&x[i] = _mm_cvtm64_si64(immx);
+//   }
 
-  for(int i = 0; i < n_remainder; i++){
-    x[i] = (LPBLAS_i16)((float)x[i] + ((float)y[i] * a));
-  }
+//   for(int i = 0; i < n_remainder; i++){
+//     x[i] = (LPBLAS_i16)((float)x[i] + ((float)y[i] * a));
+//   }
 
-  return;
-}
+//   return;
+// }
 
 #else
 
