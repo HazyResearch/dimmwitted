@@ -1,9 +1,6 @@
 
 #include "types.h"
-#include "cv.h"
-#include "timer.h"
 #include "dot.h"
-#include <iostream>
 
 using namespace lpblas;
 
