@@ -16,20 +16,32 @@ float dot_dense(const LPBLAS_TYPE * const x,
 #if defined(LPBLAS_AUTOVEC)
 
 template<typename LPBLAS_TYPE>
-float dot_dense(const LPBLAS_TYPE * const x,
-                const LPBLAS_TYPE * const y,
+float dot_dense(const LPBLAS_TYPE * const lx,
+                const LPBLAS_TYPE * const ly,
                                      int N) {
 
   const float MAX = MAX_VALUE<LPBLAS_TYPE>();
   const float DIVIDEDBY = 1.0 / MAX / MAX;
 
+  const int VEC_SIZE = LPBLAS_UTIL<LPBLAS_TYPE>::VEC_SIZE;
+
+  const LPBLAS_TYPE* const __restrict__ x = (const LPBLAS_TYPE*)__builtin_assume_aligned(lx, 32);
+  const LPBLAS_TYPE* const __restrict__ y = (const LPBLAS_TYPE*)__builtin_assume_aligned(ly, 32);
+
+  float rs[VEC_SIZE] = {};
+
+  for(int i = 0; i < N; i+=VEC_SIZE) {
+    for(int jv = 0; jv < VEC_SIZE; jv++) {
+      typename LPBLAS_UTIL<LPBLAS_TYPE>::EXPANDED xi = x[i + jv];
+      typename LPBLAS_UTIL<LPBLAS_TYPE>::EXPANDED yi = y[i + jv];
+
+      rs[jv] += xi * yi;
+    }
+  }
+
   float acc = 0.0;
-
-  for(int i = 0; i < N; i++) {
-    LPBLAS_EXPAND<LPBLAS_TYPE> xi = x[i];
-    LPBLAS_EXPAND<LPBLAS_TYPE> yi = y[i];
-
-    acc += xi * yi;
+  for(int jv = 0; jv < VEC_SIZE; jv++) {
+    acc += rs[jv];
   }
 
   return acc * DIVIDEDBY;
@@ -263,6 +275,8 @@ float dot_dense<LPBLAS_i16>(const LPBLAS_i16 * const x,
 
 #endif
 
+#ifndef LPBLAS_AUTOVEC
+
 /**
  * TODO: This call should be change to OpenBLAS kernel to 
  * validate our point (i.e., we need to be fair and best effort
@@ -295,6 +309,8 @@ float dot_dense<LPBLAS_f32>(const LPBLAS_f32 * const x,
   }
   return toreturn;
 }
+
+#endif
 
 }
 
