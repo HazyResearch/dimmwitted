@@ -26,8 +26,8 @@ float dot_dense(const LPBLAS_TYPE * const x,
   float acc = 0.0;
 
   for(int i = 0; i < N; i++) {
-    int xi = x[i];
-    int yi = y[i];
+    LPBLAS_EXPAND<LPBLAS_TYPE> xi = x[i];
+    LPBLAS_EXPAND<LPBLAS_TYPE> yi = y[i];
 
     acc += xi * yi;
   }

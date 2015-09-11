@@ -3,6 +3,7 @@
 #include "cv.h"
 #include "timer.h"
 #include "dot.h"
+#include <stdlib.h>
 #include <iostream>
 
 using namespace lpblas;
