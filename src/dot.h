@@ -16,32 +16,26 @@ float dot_dense(const LPBLAS_TYPE * const x,
 #if defined(LPBLAS_AUTOVEC)
 
 template<typename LPBLAS_TYPE>
-float dot_dense(const LPBLAS_TYPE * const lx,
-                const LPBLAS_TYPE * const ly,
+float dot_dense(const LPBLAS_TYPE * const x,
+                const LPBLAS_TYPE * const y,
                                      int N) {
 
   const float MAX = MAX_VALUE<LPBLAS_TYPE>();
   const float DIVIDEDBY = 1.0 / MAX / MAX;
 
-  const int VEC_SIZE = LPBLAS_UTIL<LPBLAS_TYPE>::VEC_SIZE;
+  //const LPBLAS_TYPE* const __restrict__ x = (const LPBLAS_TYPE*)__builtin_assume_aligned(lx, 32);
+  //const LPBLAS_TYPE* const __restrict__ y = (const LPBLAS_TYPE*)__builtin_assume_aligned(ly, 32);
 
-  const LPBLAS_TYPE* const __restrict__ x = (const LPBLAS_TYPE*)__builtin_assume_aligned(lx, 32);
-  const LPBLAS_TYPE* const __restrict__ y = (const LPBLAS_TYPE*)__builtin_assume_aligned(ly, 32);
-
-  float rs[VEC_SIZE] = {};
-
-  for(int i = 0; i < N; i+=VEC_SIZE) {
-    for(int jv = 0; jv < VEC_SIZE; jv++) {
-      typename LPBLAS_UTIL<LPBLAS_TYPE>::EXPANDED xi = x[i + jv];
-      typename LPBLAS_UTIL<LPBLAS_TYPE>::EXPANDED yi = y[i + jv];
-
-      rs[jv] += xi * yi;
-    }
-  }
+  //float rs[VEC_SIZE] = {};
 
   float acc = 0.0;
-  for(int jv = 0; jv < VEC_SIZE; jv++) {
-    acc += rs[jv];
+
+  #pragma omp simd reduction(+:acc)
+  for(int i = 0; i < N; i++) {
+    typename LPBLAS_UTIL<LPBLAS_TYPE>::EXPANDED xi = x[i];
+    typename LPBLAS_UTIL<LPBLAS_TYPE>::EXPANDED yi = y[i];
+
+    acc += (float)(xi * yi);
   }
 
   return acc * DIVIDEDBY;
