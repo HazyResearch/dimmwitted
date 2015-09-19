@@ -3,9 +3,10 @@ GCC = gcc
 ICC = icc
 
 all:
-	$(GCC) -Ofast -fopenmp -mavx -Wa,-q -o lpblas_avx.out src/main.cpp -L /usr/local/lib -lstdc++
-	$(GCC) -Ofast -fopenmp -mavx2 -Wa,-q -o lpblas_avx2.out src/main.cpp -L /usr/local/lib -lstdc++
-	$(GCC) -Ofast -fopenmp -mavx -Wa,-q -o lpblas_auto_avx.out -D LPBLAS_AUTOVEC src/main.cpp -L /usr/local/lib -lstdc++
+	$(GCC) -Ofast -fopenmp -mavx -o lpblas_avx.out src/main.cpp -L /usr/local/lib -lstdc++
+	$(GCC) -Ofast -fopenmp -mavx2 -o lpblas_avx2.out src/main.cpp -L /usr/local/lib -lstdc++
+	$(GCC) -Ofast -fopenmp -mavx -o lpblas_auto_avx.out -D LPBLAS_AUTOVEC src/main.cpp -L /usr/local/lib -lstdc++
+	$(GCC) -Ofast -fopenmp -mavx2 -o lpblas_auto_avx2.out -D LPBLAS_AUTOVEC src/main.cpp -L /usr/local/lib -lstdc++
 	$(GCC) -O2 -mavx -Wa,-q -o lpblas_novec.out -D LPBLAS_AUTOVEC src/main.cpp -L /usr/local/lib -lstdc++
 
 icc:
