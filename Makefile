@@ -1,5 +1,5 @@
 
-GCC = /usr/local/bin/gcc
+GCC = gcc
 ICC = icc
 
 all:

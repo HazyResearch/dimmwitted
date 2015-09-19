@@ -23,14 +23,14 @@ float dot_dense(const LPBLAS_TYPE * const x,
   const float MAX = MAX_VALUE<LPBLAS_TYPE>();
   const float DIVIDEDBY = 1.0 / MAX / MAX;
 
-  //const LPBLAS_TYPE* const __restrict__ x = (const LPBLAS_TYPE*)__builtin_assume_aligned(lx, 32);
-  //const LPBLAS_TYPE* const __restrict__ y = (const LPBLAS_TYPE*)__builtin_assume_aligned(ly, 32);
+  // const LPBLAS_TYPE* const __restrict__ x = (const LPBLAS_TYPE*)__builtin_assume_aligned(lx, 32);
+  // const LPBLAS_TYPE* const __restrict__ y = (const LPBLAS_TYPE*)__builtin_assume_aligned(ly, 32);
 
   //float rs[VEC_SIZE] = {};
 
   float acc = 0.0;
 
-  #pragma omp simd reduction(+:acc)
+  #pragma omp simd reduction(+:acc) aligned(x, y)
   for(int i = 0; i < N; i++) {
     typename LPBLAS_UTIL<LPBLAS_TYPE>::EXPANDED xi = x[i];
     typename LPBLAS_UTIL<LPBLAS_TYPE>::EXPANDED yi = y[i];

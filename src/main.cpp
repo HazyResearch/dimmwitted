@@ -19,13 +19,13 @@ void test_dot(){
 	const long N = 128*1024*1024;
 	LPBLAS_TYPE  * dst = new LPBLAS_TYPE[N];
 	LPBLAS_TYPE  * dst3= new LPBLAS_TYPE[N];
-	// LPBLAS_f32 * src = new LPBLAS_f32[N];
-	// LPBLAS_f32 * dst2= new LPBLAS_f32[N];
+	LPBLAS_f32 * src = new LPBLAS_f32[N];
+	LPBLAS_f32 * dst2= new LPBLAS_f32[N];
 	double dot_ans = 0.0;
 	for(long i=0;i<N;i++){
-		//src[i] = 2*drand48()-1;
-		//dot_ans += src[i];
-		//dst2[i] = 0.0;
+		src[i] = 2*drand48()-1;
+		dot_ans += src[i];
+		dst2[i] = 0.0;
 		dst[i] = 0;
 		dst3[i] = MAX_VALUE<LPBLAS_TYPE>();	// this is 1 in our encoding
 	}
@@ -33,27 +33,27 @@ void test_dot(){
 	double te;
 	double size;
 
-	// t.restart();
-	// convert_dense_ceil(src, dst, N);
-	// te = t.elapsed();
-	// size = 1.0*N*(sizeof(LPBLAS_TYPE)+sizeof(LPBLAS_f32))/1024/1024;
-	// //std::cout << "    TIME = " << te << std::endl;
-	// //std::cout << "    SIZE = " << size << " MB" << std::endl;
-	// //std::cout << "    BAND = " << size/te << " MB/s" << std::endl;
-	// std::cout << "| Convert (f32->" << sizeof(LPBLAS_TYPE)*8 << ") = " << size/te << " MB/s" << "   t = " << te << " seconds." << std::endl;
+	t.restart();
+	convert_dense_ceil(src, dst, N);
+	te = t.elapsed();
+	size = 1.0*N*(sizeof(LPBLAS_TYPE)+sizeof(LPBLAS_f32))/1024/1024;
+	//std::cout << "    TIME = " << te << std::endl;
+	//std::cout << "    SIZE = " << size << " MB" << std::endl;
+	//std::cout << "    BAND = " << size/te << " MB/s" << std::endl;
+	std::cout << "| Convert (f32->" << sizeof(LPBLAS_TYPE)*8 << ") = " << size/te << " MB/s" << "   t = " << te << " seconds." << std::endl;
 
-	// t.restart();
-	// convert_dense_ceil(dst, dst2, N);
-	// te = t.elapsed();
-	// size = 1.0*N*(sizeof(LPBLAS_TYPE)+sizeof(LPBLAS_f32))/1024/1024;
-	// //std::cout << "    TIME = " << te << std::endl;
-	// //std::cout << "    SIZE = " << size << " MB" << std::endl;
-	// //std::cout << "    BAND = " << size/te << " MB/s" << std::endl;
-	// std::cout << "| Convert (" << sizeof(LPBLAS_TYPE)*8 << "->f32) = " << size/te << " MB/s" << "   t = " << te << " seconds." << std::endl;
+	t.restart();
+	convert_dense_ceil(dst, dst2, N);
+	te = t.elapsed();
+	size = 1.0*N*(sizeof(LPBLAS_TYPE)+sizeof(LPBLAS_f32))/1024/1024;
+	//std::cout << "    TIME = " << te << std::endl;
+	//std::cout << "    SIZE = " << size << " MB" << std::endl;
+	//std::cout << "    BAND = " << size/te << " MB/s" << std::endl;
+	std::cout << "| Convert (" << sizeof(LPBLAS_TYPE)*8 << "->f32) = " << size/te << " MB/s" << "   t = " << te << " seconds." << std::endl;
 
-	// for(int i=0;i<5;i++){
-	// 	std::cout << "|    Approximate: "  << src[i] << " -> " << dst2[i] << std::endl;
-	// }
+	for(int i=0;i<5;i++){
+		std::cout << "|    Approximate: "  << src[i] << " -> " << dst2[i] << std::endl;
+	}
 
 	t.restart();
 	float dot = dot_dense(dst, dst3, N);
