@@ -96,14 +96,8 @@ double test_glm_sparse_sgd(){
   long * cols = new long[nexp*(nfeat+1)];
   long * rows = new long[nexp];
 
-  SparseVector<double>* row_pointers = 
-    (SparseVector<double>*) ::operator new(nexp * sizeof(SparseVector<double>));
-  
   long ct = 0;
   for(long i=0;i<nexp;i++){
-
-    row_pointers[i] = SparseVector<double>(&examples[ct], &cols[ct], nfeat+1);
-
     rows[i] = ct;    
     for(int j=0;j<nfeat;j++){
       examples[ct] = 1;
@@ -121,7 +115,7 @@ double test_glm_sparse_sgd(){
   }
 
   SparseDimmWitted<double, GLMModelExample_Sparse, MODELREPL, DATAREPL, DW_ACCESS_ROW> 
-    dw(row_pointers, nexp, nfeat+1, nexp*(nfeat+1), &model);
+    dw(examples, rows, cols, nexp, nfeat+1, nexp*(nfeat+1), &model);
   
   unsigned int f_handle_grad = dw.register_row(f_lr_grad_sparse);
   unsigned int f_handle_loss = dw.register_row(f_lr_loss_sparse);
