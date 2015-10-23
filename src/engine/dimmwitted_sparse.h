@@ -178,6 +178,45 @@ public:
 		dw_c2r_runner.n_thread_per_node = n_thread_per_node;
 	}
 
+
+	/**
+	 * \brief Constructor of dense DimmWitted. The input data
+	 * (_data, rows, cols) is assumed to be stored in the
+	 * CSR format, _n_elems is the number of non-zero
+	 * elements.
+	 */
+	SparseDimmWitted(
+		SparseVector<A>* _row_pointers, long _n_rows, long _n_cols, long _n_elems, 
+		B * const _model):
+		p_data(_row_pointers[0].p),
+		p_model(_model),
+		n_rows(_n_rows), n_cols(_n_cols), n_elems(_n_elems),
+		current_handle_id(0),
+		row_pointers(_row_pointers),
+		col_pointers((SparseVector<A>*) ::operator new(_n_cols * sizeof(SparseVector<A>))),
+		c2r_col_2_rowbuffer_idxs(new Pair<long, long>[_n_cols]),
+		row_ids(new long[_n_rows]),
+		col_ids(new long[_n_cols]),
+		dw_row_runner(DWRun<TASK_ROW_SPARSE<A,B>, B, model_repl_type, data_repl_type>(&task_row, p_model, sparse_model_allocator<A,B>)),
+		dw_col_runner(DWRun<TASK_COL_SPARSE<A,B>, B, model_repl_type, data_repl_type>(&task_col, p_model, sparse_model_allocator<A,B>)),
+		dw_c2r_runner(DWRun<TASK_C2R_SPARSE<A,B>, B, model_repl_type, data_repl_type>(&task_c2r, p_model, sparse_model_allocator<A,B>))
+	{
+		for(int i=0;i<n_rows;i++){
+			row_ids[i] = i;
+		}
+		for(int j=0;j<n_cols;j++){
+			col_ids[j] = j;
+		}
+
+		if(access_mode != DW_ACCESS_ROW){
+			assert(false && "This constructor only support row-access right now.");
+		}
+
+		task_row.row_pointers = row_pointers;
+		dw_row_runner.prepare();
+
+	}
+
 	/**
 	 * \brief Constructor of dense DimmWitted. The input data
 	 * (_data, rows, cols) is assumed to be stored in the
