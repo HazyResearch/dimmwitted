@@ -120,24 +120,24 @@ double test_glm_sparse_sgd(){
     model.p[i] = 0.0;
   }
 
-  SparseDimmWitted<double, GLMModelExample_Sparse, MODELREPL, DATAREPL, DW_ACCESS_ROW> 
-    dw(row_pointers, nexp, nfeat+1, nexp*(nfeat+1), &model);
+  SparseDimmWitted<double, GLMModelExample_Sparse, MODELREPL, DATAREPL, DW_ACCESS_ROW> *
+    dw = new SparseDimmWitted<double, GLMModelExample_Sparse, MODELREPL, DATAREPL, DW_ACCESS_ROW>(row_pointers, nexp, nfeat+1, nexp*(nfeat+1), &model);
   
-  unsigned int f_handle_grad = dw.register_row(f_lr_grad_sparse);
-  unsigned int f_handle_loss = dw.register_row(f_lr_loss_sparse);
-  dw.register_model_avg(f_handle_grad, f_lr_modelavg);
-  dw.register_model_avg(f_handle_loss, f_lr_modelavg);
+  unsigned int f_handle_grad = dw->register_row(f_lr_grad_sparse);
+  unsigned int f_handle_loss = dw->register_row(f_lr_loss_sparse);
+  dw->register_model_avg(f_handle_grad, f_lr_modelavg);
+  dw->register_model_avg(f_handle_loss, f_lr_modelavg);
 
   double sum = 0.0;
   for(int i_epoch=0;i_epoch<2;i_epoch++){
-    double loss = dw.exec(f_handle_loss)/nexp;
+    double loss = dw->exec(f_handle_loss)/nexp;
     sum = 0.0;
     for(int i=0;i<nfeat;i++){
       sum += model.p[i];
     }
     std::cout.precision(8);
     std::cout << sum << "    loss=" << loss << std::endl;
-    dw.exec(f_handle_grad);
+    dw->exec(f_handle_grad);
   }
 
   return sum;
