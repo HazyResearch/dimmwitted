@@ -373,7 +373,7 @@ public:
 
 	double dump_row(unsigned int f_handle, std::string filename){
 		assert(access_mode == DW_ACCESS_ROW);
-		const DW_FUNCTION_ROW const f = fs_row.find(f_handle)->second;
+		const DW_FUNCTION_ROW f = fs_row.find(f_handle)->second;
 		DW_FUNCTION_MAVG f_avg = NULL;
 		if(fs_avg.find(f_handle) != fs_avg.end()){
 			f_avg = *fs_avg.find(f_handle)->second;	
@@ -392,7 +392,7 @@ public:
 
 		if(access_mode == DW_ACCESS_ROW){
 
-			const DW_FUNCTION_ROW const f = fs_row.find(f_handle)->second;
+			const DW_FUNCTION_ROW f = fs_row.find(f_handle)->second;
 			DW_FUNCTION_MAVG f_avg = NULL;
 			if(fs_avg.find(f_handle) != fs_avg.end()){
 				f_avg = *fs_avg.find(f_handle)->second;	
@@ -401,7 +401,7 @@ public:
 			rs = dw_row_runner.exec(row_ids, n_rows, sparse_map_row<A,B>, f_avg, NULL);
 
 		}else if(access_mode == DW_ACCESS_COL){
-			const DW_FUNCTION_COL const f = fs_col.find(f_handle)->second;
+			const DW_FUNCTION_COL f = fs_col.find(f_handle)->second;
 			DW_FUNCTION_MAVG  f_avg = NULL;
 			if(fs_avg.find(f_handle) != fs_avg.end()){
 				f_avg = *fs_avg.find(f_handle)->second;	
@@ -411,7 +411,7 @@ public:
 
 		}else if(access_mode == DW_ACCESS_C2R){
 			if(fs_row.find(f_handle) != fs_row.end()){
-				const DW_FUNCTION_ROW const f = fs_row.find(f_handle)->second;
+				const DW_FUNCTION_ROW f = fs_row.find(f_handle)->second;
 				DW_FUNCTION_MAVG  f_avg = NULL;
 				if(fs_avg.find(f_handle) != fs_avg.end()){
 					f_avg = *fs_avg.find(f_handle)->second;	
@@ -420,7 +420,7 @@ public:
 				rs = dw_row_runner.exec(row_ids, n_rows, sparse_map_row<A,B>, f_avg, NULL);
 
 			}else{
-				const DW_FUNCTION_C2R const f = fs_c2r.find(f_handle)->second;
+				const DW_FUNCTION_C2R f = fs_c2r.find(f_handle)->second;
 				DW_FUNCTION_MAVG  f_avg = NULL;
 				if(fs_avg.find(f_handle) != fs_avg.end()){
 					f_avg = *fs_avg.find(f_handle)->second;	
