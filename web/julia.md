@@ -283,6 +283,15 @@ end
 and get the final loss
 
     LOSS: 0.5029576555246331
+    
+The `model` variable will be changed by DimmWitted.
+You can use any Julia function to manipulate the model
+trained by DimmWitted. For example
+
+```julia
+julia> sum(model)
+1.3827895629354943
+```
 
 ####Use All the Cores!
 
