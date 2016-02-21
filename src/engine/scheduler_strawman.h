@@ -75,13 +75,13 @@ public:
          void (*p_comm) (WRTYPE ** const, int, int),
          void (*p_finalize) (WRTYPE * const, int, int)
     ){
-    std::cout << "STRAWMAN DEBUGGING..." << std::endl;
+    std::cout << "STRAWMAN DEBUGGING MODE (Single Thread)..." << std::endl;
     double rs = 0.0;
     for(long i=0;i<ntasks;i++){
-      std::cout << p_map << std::endl;
-      std::cout << tasks[i] << std::endl;
-      std::cout << RDPTR << std::endl;
-      std::cout << WRPTR << std::endl;
+      //std::cout << p_map << std::endl;
+      //std::cout << tasks[i] << std::endl;
+      //std::cout << RDPTR << std::endl;
+      //std::cout << WRPTR << std::endl;
       rs += p_map(tasks[i], RDPTR, WRPTR);
     }
     return rs;
