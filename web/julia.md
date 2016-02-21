@@ -32,7 +32,7 @@ that you might also be interested in.
 Recall from our [installation guideline](/installation/) that you already checked out
 the code of DimmWitted by
 
-    git clone https://github.com/zhangce/dw
+    git clone https://github.com/HazyResearch/dimmwitted
 
 and lets still assume DW_HOME to be the name of the folder that contains the code (where
 the file `Makefile` sits). Compiling the DimmWitted Interface for Julia
@@ -40,28 +40,20 @@ contains two steps: (1) check out dependencies, and (2) compile DimmWitted Inter
 
 ###Dependencies
 
-We first need to checkout three dependencies, including
-
-  1. [Julia (source code)](https://github.com/JuliaLang/julia.git)
-  2. [libsupport](https://github.com/JeffBezanson/libsupport)
-  3. [libuv](https://github.com/joyent/libuv)
-
-We first go to the lib folder under DW_HOME
-
-    cd DW_HOME/lib
-    git clone https://github.com/JuliaLang/julia.git
-    git clone https://github.com/JeffBezanson/libsupport
-    git clone https://github.com/joyent/libuv
+We assume that you already have Julia installed at `$JULIADIR`. We assume that the header file `julia.h`
+is at `$JULIADIR/include/julia` and the library `libjulia` is at `$JULIADIR/lib/julia`.
 
 ###Compile DimmWitted Interface
 
 Now we can compile the DimmWitted interface:
 
     cd DW_HOME
-    make julia
+    JULIADIR=$JULIADIR make julia
+
+If you are using Homebrew on Mac, which will install Julia at `/usr/local/Cellar/julia/0.4.3`, you
+do not need the `JULIADIR=$JULIADIR` part.
 
 You should see a new file with the name `libdw_julia.dylib` in the DW_HOME folder.
-
 
 ###Validation
 
