@@ -13,7 +13,7 @@ _libpath = ""
 _data_type = ""
 _model_type = ""
 
-_nogc = {0.0,0.0}
+_nogc = Any[0.0,0.0]
 
 MR_PERCORE = 0
 MR_PERNODE = 1
@@ -64,7 +64,7 @@ function open{DATATYPE, MODELTYPE}(examples::SparseMatrixCSC{DATATYPE,Int64}, mo
 		data::$(DATATYPE)
 	end
 
-	append!(_nogc, {_model, examples, _shared_data, tmptype})
+	append!(_nogc, Any[_model, examples, _shared_data, tmptype])
 
 	nmodelel = size(model, 1)
 
@@ -98,7 +98,7 @@ function open{DATATYPE, MODELTYPE}(examples::Array{DATATYPE,2}, model::Array{MOD
 	_model = model
 	_examples_c = examples.'
 
-	append!(_nogc, {_examples, _model, _examples_c, _shared_data})
+	append!(_nogc, Any[_examples, _model, _examples_c, _shared_data])
 	
 	nrows = size(examples, 1)
 	ncols = size(examples, 2)
@@ -162,7 +162,7 @@ function register_row2(_dw, func, supress=false)
 
 	const func_c = cfunction(func, Cdouble, (Array{_data_type,1}, Array{_model_type,1}, _dw.shareddatatype))
 
-	append!(_nogc, {func_c, func})
+	append!(_nogc, Any[func_c, func])
 
 	handle = @eval ccall(($(string("DenseDimmWitted_Register_Row2")), $(_libpath)), Cuint, (Ptr{Void}, Ptr{Void}, Cint, Cint, Cint), $(_dw._dw), $(func_c), $(_dw.modelrepl), $(_dw.datarepl), $(_dw.accessmethod)) 
 
@@ -184,7 +184,7 @@ function register_row(_dw, func, supress=false)
 
 	const func_c = cfunction(func, Cdouble, (Array{_data_type,1}, Array{_model_type,1}))
 
-	append!(_nogc, {func_c, func})
+	append!(_nogc, Any[func_c, func])
 
 	handle = @eval ccall(($(string("DenseDimmWitted_Register_Row2")), $(_libpath)), Cuint, (Ptr{Void}, Ptr{Void}, Cint, Cint, Cint), $(_dw._dw), $(func_c), $(_dw.modelrepl), $(_dw.datarepl), $(_dw.accessmethod)) 
 
@@ -204,7 +204,7 @@ function register_c2r(_dw, func, supress=false)
 
 	const func_c = cfunction(func, Cdouble, (Array{_data_type,1}, Cint, Array{Array{Cdouble, 1},1}, Array{_model_type,1}))
 
-	append!(_nogc, {func_c, func})
+	append!(_nogc, Any[func_c, func])
 
 	handle = @eval ccall(($(string("DenseDimmWitted_Register_C2R2")), $(_libpath)), Cuint, (Ptr{Void}, Ptr{Void}, Cint, Cint, Cint), $(_dw._dw), $(func_c), $(_dw.modelrepl), $(_dw.datarepl), $(_dw.accessmethod)) 
 
@@ -224,7 +224,7 @@ function register_c2r2(_dw, func, supress=false)
 
 	const func_c = cfunction(func, Cdouble, (Array{_data_type,1}, Cint, Array{Array{Cdouble, 1},1}, Array{_model_type,1}, _dw.shareddatatype))
 
-	append!(_nogc, {func_c, func})
+	append!(_nogc, Any[func_c, func])
 
 	handle = @eval ccall(($(string("DenseDimmWitted_Register_C2R2")), $(_libpath)), Cuint, (Ptr{Void}, Ptr{Void}, Cint, Cint, Cint), $(_dw._dw), $(func_c), $(_dw.modelrepl), $(_dw.datarepl), $(_dw.accessmethod)) 
 
@@ -245,7 +245,7 @@ function register_col(_dw, func, supress=false)
 
 	const func_c = cfunction(func, Cdouble, (Array{_data_type,1}, Array{_model_type,1}, _dw.shareddatatype))
 
-	append!(_nogc, {func_c, func})
+	append!(_nogc, Any[func_c, func])
 
 	handle = @eval ccall(($(string("DenseDimmWitted_Register_Col2")), $(_libpath)), Cuint, (Ptr{Void}, Ptr{Void}, Cint, Cint, Cint), $(_dw._dw), $(func_c), $(_dw.modelrepl), $(_dw.datarepl), $(_dw.accessmethod)) 
 
@@ -265,7 +265,7 @@ function register_col(_dw, func, supress=false)
 
 	const func_c = cfunction(func, Cdouble, (Array{_data_type,1}, Array{_model_type,1}))
 
-	append!(_nogc, {func_c, func})
+	append!(_nogc, Any[func_c, func])
 
 	handle = @eval ccall(($(string("DenseDimmWitted_Register_Col2")), $(_libpath)), Cuint, (Ptr{Void}, Ptr{Void}, Cint, Cint, Cint), $(_dw._dw), $(func_c), $(_dw.modelrepl), $(_dw.datarepl), $(_dw.accessmethod)) 
 
@@ -286,7 +286,7 @@ function register_model_avg(_dw, handle, func, supress=false)
 
 	const func_c = cfunction(func, Cdouble, (Array{Array{Cdouble,1},1}, Cint, Cint))
 
-	append!(_nogc, {func_c, func})
+	append!(_nogc, Any[func_c, func])
 
 	@eval ccall(($(string("DenseDimmWitted_Register_ModelAvg2")), $(_libpath)), Void, (Ptr{Void}, Cuint, Ptr{Void}, Cint, Cint, Cint), $(_dw._dw), $(handle), $(func_c), $(_dw.modelrepl), $(_dw.datarepl), $(_dw.accessmethod))
 
