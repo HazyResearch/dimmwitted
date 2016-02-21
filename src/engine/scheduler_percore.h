@@ -82,7 +82,7 @@ public:
 #ifdef _JULIA
     modelptr = (jl_array_t*) ::operator new(((sizeof(jl_array_t)+jl_array_ndimwords(1)*sizeof(size_t)+15)&-16));
 
-    modelptr->type = jl_typeof(&model_replicas[0]);
+    //modelptr->type = jl_typeof(&model_replicas[0]);
     modelptr->data = (void*) &model_replicas[0];
     modelptr->length = n_sharding + 1;
     modelptr->elsize = sizeof(void*);

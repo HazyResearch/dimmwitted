@@ -17,6 +17,10 @@ endif
 ### MAC ###
 ifeq ($(UNAME), Darwin)
 
+ifndef JULIADIR
+JULIADIR=/usr/local/Cellar/julia/0.4.3
+endif
+
 ifndef CXX
 CXX=clang++
 endif
@@ -57,6 +61,6 @@ runtest:
 
 julia:
 
-	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) -I./src -I./lib/julia/src/ -I./lib/libsupport/ -I./lib/libuv/include/ -D _JULIA \
-			$(CPP_JULIA_LIBRARY) $(CPP_LAST)
+	$(CXX) $(CPP_FLAG) $(CPP_INCLUDE) -I./src -I$(JULIADIR)/include/julia/ -I./lib/libsupport/ -I./lib/libuv/include/ -D _JULIA \
+	        -L$(JULIADIR)/lib/julia/  $(CPP_JULIA_LIBRARY) $(CPP_LAST) -ljulia
 

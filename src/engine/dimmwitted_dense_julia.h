@@ -27,7 +27,7 @@
 #include "engine/scheduler_pernode.h"
 
 #include "julia.h"
-#include "julia_internal.h"
+//#include "julia_internal.h"
 
 
 struct SparsePair{
@@ -154,7 +154,7 @@ double dense_map_c2r_JULIA (long i_task, const TASK_C2R_JULIA<B> * const rddata,
 template<class B>
 void dense_model_allocator_JULIA (jl_array_t ** const a, const jl_array_t * const b){
 	(*a) = (jl_array_t*) ::operator new(((sizeof(jl_array_t)+jl_array_ndimwords(1)*sizeof(size_t)+15)&-16));
-	(*a)->type = (b)->type;
+	//(*a)->type = (b)->type;
 	(*a)->data = (void *) new char[(b)->length*(b)->elsize];
 	(*a)->length = (b)->length;
 	(*a)->elsize = (b)->elsize;
@@ -342,7 +342,7 @@ public:
 		size_t elsz = jl_datatype_size(data_el_type);
 		if(access_mode == DW_ACCESS_ROW || access_mode == DW_ACCESS_C2R){
 			for(int i=0;i<n_rows;i++){
-					row_pointers[i].type = data_el_type;
+					//row_pointers[i].type = data_el_type;
 					row_pointers[i].data = (void*) &(p_data[i*elsz*n_cols]);
 					row_pointers[i].length = n_cols;
 					row_pointers[i].elsize = elsz;
@@ -364,7 +364,7 @@ public:
 			_new_ele_buffer = new char[n_rows*n_cols*elsz];
 			long ct = 0;
 			for(int j=0;j<n_cols;j++){
-				col_pointers[j].type = data_el_type;
+				//col_pointers[j].type = data_el_type;
 				col_pointers[j].data = (void*) &_new_ele_buffer[ct*elsz];
 				col_pointers[j].length = n_rows;
 				col_pointers[j].elsize = elsz;
@@ -407,7 +407,7 @@ public:
 					}
 
 					c2r_col_2_rowbuffer_idxs[j].second = (jl_array_t*) ::operator new(((sizeof(jl_array_t)+jl_array_ndimwords(1)*sizeof(size_t)+15)&-16));
-					c2r_col_2_rowbuffer_idxs[j].second->type = jl_typeof(&row_pointers[0]);
+					//c2r_col_2_rowbuffer_idxs[j].second->type = jl_typeof(&row_pointers[0]);
 					c2r_col_2_rowbuffer_idxs[j].second->data = (void*) &_c2r_row_pointers_buffer[c2r_col_2_rowbuffer_idxs[j].first];
 					c2r_col_2_rowbuffer_idxs[j].second->length = a;
 					c2r_col_2_rowbuffer_idxs[j].second->elsize = sizeof(void*);
@@ -550,7 +550,7 @@ public:
 			}*/
 
 			for(int i=0;i<n_rows;i++){
-				row_pointers[i].type = wrapped_el_type;
+				//row_pointers[i].type = wrapped_el_type;
 				row_pointers[i].data = (void*) &(_sparse_buffer_row[ rowpointers_ori[i]*wrapper_elsz ]);
 				if(i==n_rows - 1){
 					row_pointers[i].length = n_nzelems - rowpointers_ori[i];

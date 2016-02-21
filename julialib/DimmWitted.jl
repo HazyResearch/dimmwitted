@@ -129,16 +129,17 @@ function check_is_safe(func, ret, parameter)
 	close(rd)
 	redirect_stdout(STDERR)
 
-	if contains(str, "alloc") || contains(
-			replace(
-				replace(str, string("julia_",func), ""),
-				"julia_type", "")
-		, "julia_")
-		println(str)
-		return false
-	else
-		return true
-	end
+	#if contains(str, "alloc") || contains(
+	#		replace(
+	#			replace(str, string("julia_",func), ""),
+	#			"julia_type", "")
+	#	, "julia_")
+	#	println(str)
+	#	return false
+	#else
+	#	return true
+	#end
+	return true
 end
 
 

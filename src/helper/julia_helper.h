@@ -2,9 +2,16 @@
 #ifndef _JULIA_HELPER_H
 #define _JULIA_HELPER_H
 
+#define JL_DLLEXPORT DLLEXPORT
+
+#include "assert.h"
 #include "julia.h"
-#include "julia_internal.h"
+//#include "julia_internal.h"
+
+//#include "builtin_proto.h"
+
 #include "dimmwitted.h"
+
 #include "engine/dimmwitted_dense_julia.h"
 
 class JuliaModle{

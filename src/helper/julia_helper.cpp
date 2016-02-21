@@ -21,7 +21,7 @@ void * SparseDimmWitted_Open2(jl_value_t *data_type, jl_value_t *wrapped_el_type
 	size_t model_el_sz = jl_datatype_size(model_el_type);
 
 	jl_array_t * mmodel = (jl_array_t*) ::operator new(model_nelems * ((sizeof(jl_array_t)+jl_array_ndimwords(1)*sizeof(size_t)+15)&-16));
-	mmodel->type = model_type;
+	//mmodel->type = model_type;
 	mmodel->data = model;
 	mmodel->length = model_nelems;
 	mmodel->elsize = model_el_sz;
@@ -42,7 +42,7 @@ void * SparseDimmWitted_Open2(jl_value_t *data_type, jl_value_t *wrapped_el_type
 	else
 		shared_el_sz = sizeof(void*);
 	jl_array_t * mdata = (jl_array_t*) ::operator new(model_nelems * ((sizeof(jl_array_t)+jl_array_ndimwords(1)*sizeof(size_t)+15)&-16));
-	mdata->type = shared_el_type;
+	//mdata->type = shared_el_type;
 	mdata->data = shared_data;
 	mdata->length = n_shared_data;
 	mdata->elsize = shared_el_sz;
@@ -223,7 +223,7 @@ void * DenseDimmWitted_Open2(jl_value_t *data_type, jl_value_t *model_type,     
 	size_t model_el_sz = jl_datatype_size(model_el_type);
 
 	jl_array_t * mmodel = (jl_array_t*) ::operator new(model_nelems * ((sizeof(jl_array_t)+jl_array_ndimwords(1)*sizeof(size_t)+15)&-16));
-	mmodel->type = model_type;
+	//mmodel->type = model_type;
 	mmodel->data = model;
 	mmodel->length = model_nelems;
 	mmodel->elsize = model_el_sz;
@@ -244,7 +244,7 @@ void * DenseDimmWitted_Open2(jl_value_t *data_type, jl_value_t *model_type,     
 	else
 		shared_el_sz = sizeof(void*);
 	jl_array_t * mdata = (jl_array_t*) ::operator new(model_nelems * ((sizeof(jl_array_t)+jl_array_ndimwords(1)*sizeof(size_t)+15)&-16));
-	mdata->type = shared_el_type;
+	//mdata->type = shared_el_type;
 	mdata->data = shared_data;
 	mdata->length = n_shared_data;
 	mdata->elsize = shared_el_sz;
@@ -1355,29 +1355,6 @@ double DenseDimmWitted_Exec(void * p_dw, unsigned int fhandle){
 void Hello(){
 	std::cout << "Hi! -- by DimmWitted" << std::endl;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 void Print(void * b){
